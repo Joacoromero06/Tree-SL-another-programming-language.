@@ -1,0 +1,2 @@
+if ({}) add 2+2*2 to [] else kick 1 from [1, {} union {1,2}] endif 
+kick 1 from [1]
