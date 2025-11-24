@@ -15,12 +15,12 @@
     tData td;
 }
 %token EOL T_ADD T_KICK T_TAKE
-%token T_IF T_ELSE T_ENDIF T_WHILE T_DO T_END T_FORALL
+%token T_IF T_ELSE T_ENDIF T_WHILE T_DO T_END T_FORALL T_FORANY
 
 %token <td> NUM_INT ATOM NUM_DOUBLE  T_BOOL
 %token <s> ID
 
-%left '='
+%right '='
 %left T_IN T_CONTAINS
 %left T_UNION
 %left T_INTER
@@ -29,7 +29,7 @@
 %left T_FROM T_TO
 %left '+' '-'
 %left '*' '/'
-
+%right T_MENOS_UNARIO
 
 %type <a> exp stm 
 %type <a> lit_struct list_exp
@@ -39,13 +39,14 @@
 %%
 tree: 
 | tree stm EOL { printf("=> "); mostrarData(eval($2));printf("\n"); }
-;
+; 
 stm: exp    {}
 | T_IF '(' exp ')' exp T_ENDIF                        { $$ = newflow(IF,     $3, NULL, $5 , NULL, NULL); }
 | T_IF '(' exp ')' exp T_ELSE exp T_ENDIF             { $$ = newflow(IF,     $3, NULL, $5 , $7  , NULL); }
 | T_WHILE '(' exp ')' T_DO exp T_END                  { $$ = newflow(WHILE,  $3, NULL, $6 , NULL, NULL); }
 
 | T_FORALL '(' ID T_IN exp '|' exp ')' T_DO exp T_END { $$ = newflow(FORALL, $7, $5  , $10, NULL, $3  ); }
+| T_FORANY '(' ID T_IN exp '|' exp ')' T_DO exp T_END { $$ = newflow(FORANY, $7, $5  , $10, NULL, $3  ); }
 ;
 
 exp: NUM_INT    { $$ = newast(INT, NULL, NULL, $1);     }   
@@ -58,6 +59,12 @@ exp: NUM_INT    { $$ = newast(INT, NULL, NULL, $1);     }
 | exp '-' exp   { $$ = newast('-',$1,$3,NULL); }
 | exp '*' exp   { $$ = newast('*',$1,$3,NULL); }
 | exp '/' exp   { $$ = newast('/',$1,$3,NULL); }
+
+| '(' exp ')'   { $$ = $2;}
+
+| '-' exp %prec T_MENOS_UNARIO { $$ = newast(MENOS_UNARIO, $2, NULL, NULL); }
+
+| '|' exp '|'   { $$ = newast(MODULO, $2, NULL, NULL); }
 
 | T_ADD exp T_TO exp    { $$ = newast(ADD,   $2 , $4, NULL); }
 | T_KICK exp T_FROM exp { $$ = newast(KICK,  $2 , $4, NULL); }

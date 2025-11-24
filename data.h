@@ -58,13 +58,17 @@ tData Interseccion (tData, tData);
 tData Diferencia (tData, tData);
 tData DifSimetrica (tData, tData);
 int pertenece(tData,tData);
-int tamanio (tData);
 int contenido (tData, tData);
+int pertenece_completing(tData, tData);
 
 // Operaciones de lista
-tData elemento_pos(tData, int pos);
-void eliminar_pos(tData*, int pos);
+void eliminar_pos(tData*, int);
 tData concat_list(tData,tData);
-int pertenece_completing(tData, tData);
+
+// OPeraciones de lista y conjunto
+tData elemento_pos(tData, int);
+int tamanio (tData);
+tData negar_data(tData);
+tData modulo_data(tData);
 
 #endif

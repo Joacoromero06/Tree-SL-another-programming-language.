@@ -65,19 +65,21 @@ extern int yydebug;
     T_DO = 266,                    /* T_DO  */
     T_END = 267,                   /* T_END  */
     T_FORALL = 268,                /* T_FORALL  */
-    NUM_INT = 269,                 /* NUM_INT  */
-    ATOM = 270,                    /* ATOM  */
-    NUM_DOUBLE = 271,              /* NUM_DOUBLE  */
-    T_BOOL = 272,                  /* T_BOOL  */
-    ID = 273,                      /* ID  */
-    T_IN = 274,                    /* T_IN  */
-    T_CONTAINS = 275,              /* T_CONTAINS  */
-    T_UNION = 276,                 /* T_UNION  */
-    T_INTER = 277,                 /* T_INTER  */
-    T_DIFF = 278,                  /* T_DIFF  */
-    T_CONCAT = 279,                /* T_CONCAT  */
-    T_FROM = 280,                  /* T_FROM  */
-    T_TO = 281                     /* T_TO  */
+    T_FORANY = 269,                /* T_FORANY  */
+    NUM_INT = 270,                 /* NUM_INT  */
+    ATOM = 271,                    /* ATOM  */
+    NUM_DOUBLE = 272,              /* NUM_DOUBLE  */
+    T_BOOL = 273,                  /* T_BOOL  */
+    ID = 274,                      /* ID  */
+    T_IN = 275,                    /* T_IN  */
+    T_CONTAINS = 276,              /* T_CONTAINS  */
+    T_UNION = 277,                 /* T_UNION  */
+    T_INTER = 278,                 /* T_INTER  */
+    T_DIFF = 279,                  /* T_DIFF  */
+    T_CONCAT = 280,                /* T_CONCAT  */
+    T_FROM = 281,                  /* T_FROM  */
+    T_TO = 282,                    /* T_TO  */
+    T_MENOS_UNARIO = 283           /* T_MENOS_UNARIO  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -92,7 +94,7 @@ union YYSTYPE
     struct symbol* s;
     tData td;
 
-#line 96 "tree.tab.h"
+#line 98 "tree.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

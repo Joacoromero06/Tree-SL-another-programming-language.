@@ -1,12 +1,12 @@
 #include "data.h"
 #include "defs.h"
-
+#include <math.h>
 /*==========================================================================*/
 /*								CONSTRUCTORES								*/
 /*==========================================================================*/
 tData createData(int tipo)
 {
-	tData nvo;
+	tData nvo; 
 	nvo = (tData)malloc(sizeof(TNodoData));
 
 	switch (tipo)
@@ -132,15 +132,40 @@ tData get_next(tData a)
 }
 void set_next(tData *node, tData next)
 {
+	if(!(*node))
+	{
+		printf("error en set_next puntero null");
+		return;
+	}
+	if(get_tipo(*node) != SET && get_tipo(*node) != LIST)
+	{
+		printf("set_next solo funciona para nodotipo LIST SET");
+		return;
+	}
 	(*node)->sig = next;
 }
 void set_dato(tData *node, tData dato)
 {
+	if(!(*node))
+	{
+		printf("error en set_dato puntero null");
+		return;
+	}
+	if(get_tipo(*node) != SET && get_tipo(*node) != LIST)
+	{
+		printf("set_dato solo funciona para nodotipo LIST SET");
+		return;
+	}
 	(*node)->dato = dato;
 }
 
 int get_tipo(tData a)
 {
+	if(!a)
+	{
+		printf("get_tipo recibe puntero null");
+		return 0;
+	}
 	return a->tipoNodo;
 }
 int get_bool_value(tData a){
@@ -192,6 +217,11 @@ int get_value(tData a)
 	{
 		printf("\nQuiere obtener un valor de un tdata vacio.\n");
 		exit(1);
+	}
+	if(get_tipo(a) != INT && get_tipo(a) != BOOL)
+	{
+		printf("error en get_value solo para nodotipo INT o BOOL\n");
+		return 0;
 	}
 	return a->value;
 }
@@ -289,9 +319,12 @@ tData cocData(tData a, tData b)
 /*==========================================================================*/
 void mostrarData(tData nodo)
 {
-
 	if (nodo == NULL)
+	{
+		// printf("_mostrando vacio_\n");
 		return;
+	}
+
 
 	switch (nodo->tipoNodo)
 	{
@@ -445,11 +478,6 @@ void freeData(tData descartado)
 	{
 	case STR:
 		freeString(descartado->cad);
-		break;
-	case BOOL:
-	case INT:
-	case DOUBLE:
-		free(descartado);
 		break;
 	case LIST:
 	case SET:
@@ -716,57 +744,10 @@ int contenido(tData A, tData B)
 	}
 	return 1;
 }
-int tamanio(tData A)
-{
-	if ( !A ) 
-	{
-		printf("Error interno tamanio puntero null");
-		return 0;
-	}
-	
-	if ( A->tipoNodo != SET && A->tipoNodo != LIST )
-		return 1;
-	
-
-	int c = 0;
-	if ( get_next(A) == NULL )
-	{
-		if ( get_dato(A) == NULL )
-		{
-			return 0; // lista vacia
-	
-		}
-	}
-	while (A != NULL)
-	{
-		c++;
-		A = A->sig;
-	}
-
-	return c;
-}
 
 /*==========================================================================*/
 /*							OPERACIONES LISTA								*/
 /*==========================================================================*/
-tData elemento_pos(tData lista, int pos)
-{
-	if (!lista || get_tipo(lista) != LIST)
-	{
-		printf("Error elemento_pos es una operacion de listas");
-		return NULL;
-	}
-	int i = 1;
-	while (i < pos && lista != NULL)
-	{
-		i++;
-		lista = get_next(lista);
-	}
-	if (i = pos && lista != NULL)
-		return get_dato(lista);
-	printf("Posicion más grande que indice.\n");
-	return createStr("-1");
-}
 tData concat_list(tData a, tData b)
 {
 	tData nuevo = createData(LIST);
@@ -831,4 +812,170 @@ void eliminar_pos(tData *l, int pos)
 		set_next(&ant, get_next(nav));
 		freeData(nav);
 	}
+}
+
+/*==========================================================================*/
+/*					   OPERACIONES LISTA Y CONJUNTOS						*/
+/*==========================================================================*/
+tData elemento_pos(tData data, int pos)
+{
+	if (!data)
+	{
+		printf("puntero nulo en elemento_pos\n");
+		return NULL;
+	}
+	if (get_tipo(data) != SET && get_tipo(data) != LIST)
+	{
+		printf("Error elemento_pos es una operacion de listas o conjuntos\n");
+		return NULL;
+	}
+	int i = 1;
+	while (i < pos && data != NULL)
+	{
+		i++;
+		data = get_next(data);
+	}
+	if (i == pos && data != NULL)
+		return get_dato(data);
+	printf("Posicion más grande que lista.\n");
+	return createStr("-1"); // createInt(-1);
+}
+int tamanio(tData A)
+{
+	if ( !A ) 
+	{
+		printf("Error interno tamanio puntero null\n");
+		return 0;
+	}
+	
+	if ( A->tipoNodo != SET && A->tipoNodo != LIST )
+		return 1;
+	
+
+	int c = 0;
+	if ( get_next(A) == NULL )
+	{
+		if ( get_dato(A) == NULL )
+		{
+			return 0; // lista vacia
+	
+		}
+	}
+	while (A != NULL)
+	{
+		c++;
+		A = A->sig;
+	}
+
+	return c;
+}
+tData negar_data(tData data)
+{
+	tData nuevo = NULL;
+	if(!data)
+	{
+		return NULL;
+	}
+	switch (get_tipo(data))
+    {
+        case STR:
+		{
+			nuevo = copiarData(data);
+			break;
+		}
+		case INT: 
+        {
+            nuevo = createInt(-get_value(data));
+            break;
+        } 
+        case DOUBLE:
+        {
+            nuevo = createDouble(-get_real(data));
+            break;
+        }
+        case BOOL:
+        {
+            if(get_value(data))
+            {
+                nuevo = createBool("false");
+            }
+            else
+            {
+                nuevo = createBool("true");
+            }
+            break;
+        }
+        case LIST: 
+        {
+            nuevo = createData(LIST);
+			nuevo->dato = negar_data(data->dato);
+			nuevo->sig = negar_data(data->sig);
+            break;
+        }         
+		case SET:
+		{
+			nuevo = createData(SET);
+			nuevo->dato = negar_data(data->dato);
+			nuevo->sig = negar_data(data->sig);
+            break;
+		}
+        default:
+		{
+			printf("nodotipo desconocido en negar_data\n");
+            break;
+		}
+    }
+	return nuevo;
+}
+tData modulo_data(tData data)
+{
+	tData modulo_data;
+	if(!data)
+	{
+		printf("puntero null en modulo_data\n");
+		return 0;
+	}
+	switch (get_tipo(data))
+	{ 
+	case INT:
+	{ 
+		modulo_data = createInt(abs(get_value(data)));
+		break;
+	}
+	case DOUBLE:
+	{
+		modulo_data = createDouble(fabs(get_real(data)));
+		break;
+	}
+	case BOOL:
+	{
+		if (get_value(data))
+		{
+			modulo_data = createInt(1);
+		}
+		else
+		{
+			modulo_data = createInt(0);
+		}
+		break;
+	}
+	case STR:
+	{
+		modulo_data = createInt(1);
+		break;
+	}
+	case LIST: case SET:
+	{
+		modulo_data = createInt(tamanio(data));
+		break;
+	}
+	default:
+	{
+		printf("tiponodo desconocido en modulo_data\n");
+		break;
+	}
+	}
+
+	
+	return modulo_data;
 }

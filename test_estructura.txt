@@ -1,0 +1,6 @@
+if ({}) add 2+2*2 to [] else kick 1 from [1, {} union {1,2}] endif 
+kick 1 from [1]
+acum = 0
+forany (x in [0,0,0,0,0] | x) do acum = acum + x end
+take 1 from [1,2]
+take 2 from [1,2]

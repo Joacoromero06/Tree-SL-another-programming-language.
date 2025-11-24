@@ -56,12 +56,12 @@ str load2(const char* F){
 	
 void print(str cad){
 	if(cad!=NULL){
-		printf("'");
+		// printf("'");
 		while(cad!=NULL){
 			printf("%c",cad->dato);
 			cad=cad->sig;
 		}
-		printf("'");
+		// printf("'");
 	}
 	
 }
@@ -74,7 +74,7 @@ str concat(str a,str b){
 		b = b->sig;
 	
 	if (a != NULL) {
-	
+	 
 		trav = create();  
 		trav->dato = a->dato;
 		trav->sig = concat(a->sig, b);

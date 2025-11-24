@@ -28,6 +28,7 @@ while     { return T_WHILE;   }
 do        { return T_DO;      }
 end       { return T_END;     }
 forall    { return T_FORALL;  }
+forany    { return T_FORANY;  }
 
 kick   { return T_KICK;   }
 add    { return T_ADD;    }
@@ -47,11 +48,11 @@ diff      { return T_DIFF;  }
 
 [0-9]+                  { yylval.td = createInt(atoi(strdup(yytext))); return NUM_INT; }
 \"[a-z][a-z0-9]*\"      { yylval.td = createStr(strdup(yytext)); return ATOM; }
-[a-zA-Z][a-zA-Z0-9]*    { yylval.s = lookup(strdup(yytext)); return ID; }
+[a-zA-Z_][a-zA-Z0-9_]*    { yylval.s = lookup(strdup(yytext)); return ID; }
 [0-9]+"."?[0-9]*{EXP}? |
 [0-9]*"."?[0-9]+{EXP}?  { yylval.td = createDouble(atof(strdup(yytext))); return NUM_DOUBLE; }
 
-[ \t] {} /*espacios vacios del codigo*/
+[ \t]  {} 
 \n  { return EOL; }
 .   { printf("CARACTER DESCONOCIDO: %s\n",yytext); }
 

@@ -103,6 +103,12 @@ tData evalOpList(struct ast *a)
     tData aux_result = eval(left);
     tData list_result = eval(right);
 
+    if( !aux_result || !list_result)
+    {
+        printf("Run-Time Error\n");
+        exit(1);
+    }
+
     switch (get_nodetype(a))
     {
     case KICK:
@@ -114,6 +120,7 @@ tData evalOpList(struct ast *a)
             if ( posicion > tamanio(nuevo) )
             {
                 printf("Error semantico."); mostrarData(list_result); printf(" es demesiada pequeña para eliminiar su elem en posicion: %d\n", posicion);
+                exit(1);
             }
             else
             {
@@ -126,10 +133,12 @@ tData evalOpList(struct ast *a)
             if ( get_tipo(aux_result) != INT  )
             {
                 printf("Error semantico. "); mostrarData(aux_result); printf(" debe ser entero");
+                exit(1);
             }
             if ( get_tipo(list_result) != LIST )
             {
                 printf("Error semantico. "); mostrarData(list_result); printf(" debe ser lista");
+                exit(1);
             }
         }
         break;
@@ -147,10 +156,11 @@ tData evalOpList(struct ast *a)
             if ( get_tipo(aux_result) != INT  )
             {
                 printf("Error semantico. "); mostrarData(aux_result); printf(" debe ser entero");
+                exit(1);
             }
             if ( get_tipo(list_result) != LIST )
             {
-                printf("Error semantico. "); mostrarData(list_result); printf(" debe ser lista");
+                exit(1);
             }
         }
         break;
@@ -160,9 +170,10 @@ tData evalOpList(struct ast *a)
         if (get_tipo(aux_result) == INT && get_tipo(list_result) == LIST)
         {
             int posicion = get_value(aux_result);
-            if ( posicion > tamanio(nuevo) )
+            if ( posicion > tamanio(list_result) )
             {
                 printf("Error semantico."); mostrarData(list_result); printf(" es demesiada pequeña para obtener su elem en posicion: %d\n", posicion);
+                exit(1);
             }
             else
             {
@@ -175,10 +186,12 @@ tData evalOpList(struct ast *a)
             if ( get_tipo(aux_result) != INT  )
             {
                 printf("Error semantico."); mostrarData(aux_result); printf(" debe ser entero");
+                exit(1);
             }
             if ( get_tipo(list_result) != LIST )
             {
                 printf("Error semantico."); mostrarData(list_result); printf(" debe ser lista");
+                exit(1);
             }
         }
         break;
@@ -192,6 +205,7 @@ tData evalOpList(struct ast *a)
         else
         {
             printf("Erorr semantico solo se puede concatenar dos listas\n");
+            exit(1);
         }
         break;
     }
@@ -210,12 +224,19 @@ tData evalOpSet(struct ast *a)
 
     tData conj_1 = eval(left);
     tData conj_2 = eval(right);
+    
+    if( !conj_1 || !conj_2)
+    {
+        printf("Run-Time Error\n");
+        exit(1);
+    }
 
     if (get_tipo(conj_1) != SET || get_tipo(conj_2) != SET)
     {
         printf("Operacion valida solo para conjuntos\n");
         return NULL;
     }
+    
     switch (get_nodetype(a))
     {
     case UNION:
@@ -282,8 +303,9 @@ tData eval_flow(struct flow *a)
     case FORALL:
     {
         tData data_iterable = copiarData(eval(iterable));
+        
         int tam = tamanio(data_iterable);
-        for (int i = 1; i < tam; i++) // forall ( x in [1,2] | x ) do 2 + 2 end // chequear i
+        for (int i = 1; i <= tam; i++) // forall ( x in [1,2] | x ) do 2 + 2 end // chequear i
         {
             tData elem_i = elemento_pos(data_iterable, i); // añadir que funcione para SET
             s->data = copiarData(elem_i);
@@ -292,6 +314,27 @@ tData eval_flow(struct flow *a)
             {
                 nuevo = eval(tblock);
             }
+        }
+    }
+    case FORANY:
+    {
+        tData data_iterable = copiarData(eval(iterable));
+        
+        int i, tam, band;
+        i = 1;
+        tam = tamanio(data_iterable);
+        band = 0;
+
+        while ( i <= tam && !band ) 
+        {
+            tData elem_i = elemento_pos(data_iterable, i); 
+            s->data = copiarData(elem_i);
+            if ( get_bool_value( eval(cond) ) )
+            {
+                nuevo = eval(tblock);
+                band = 1;
+            }
+            i++;
         }
     }
     default:
@@ -309,8 +352,8 @@ tData eval_memory_ast(struct memory_ast * arbol)
     }
 
     tData nuevo = NULL;
-    struct ast* a    = arbol->a;
     struct symbol* s = arbol->s;
+    struct ast* a    = arbol->a;
 
     switch (get_nodetype( (struct ast*) arbol ))
     {
@@ -320,9 +363,10 @@ tData eval_memory_ast(struct memory_ast * arbol)
         break;
     case VAR_REF:
         nuevo = copiarData(s->data); // sin copiar ?
+        
         if (nuevo == NULL)
         {
-            printf("Error referencia a variable no inicializada");
+            printf("Error referencia a variable no inicializada\n");
         }
         break;
     default:
@@ -378,6 +422,12 @@ tData eval(struct ast *a)
         tData eval_r, eval_l; // printf(" MUERE AQUI 3 ");
         eval_r = eval(right);
         eval_l = eval(left);
+        if ( !eval_l || !eval_r)
+        {
+            printf("Run-Time Error\n");
+            nuevo =  NULL;
+            exit(1);
+        }
         if (get_tipo(eval_r) != BOOL && get_tipo(eval_r) != STR && get_tipo(eval_r) != LIST && get_tipo(eval_r) != SET && get_tipo(eval_l) != BOOL && get_tipo(eval_l) != STR && get_tipo(eval_l) != SET && get_tipo(eval_l) != LIST)
         {
             switch (get_nodetype(a))
@@ -399,10 +449,37 @@ tData eval(struct ast *a)
             }
         }
         else
+        {
             printf("Error semantico: Solo operaciones entre numeros.");
+            exit(1);
+        }
         break;
     }
 
+    case MENOS_UNARIO:
+    {
+        tData eval_left = eval(left);
+        if(!eval_left)
+        {
+            printf("Run-Time Error\n"); 
+            exit(1);
+        }
+        nuevo = negar_data(eval_left);
+        break;
+    }
+    
+    case MODULO:
+    {
+        tData eval_left = eval(left);
+        if(!eval_left)
+        {
+            printf("Eun-Time Error\n");
+            exit(1);
+        }
+        nuevo = modulo_data(eval_left);
+        break;
+    }
+    
     case KICK:
     case ADD:
     case CONCAT:
@@ -446,6 +523,7 @@ tData eval(struct ast *a)
         {
             printf("Error Semantic, IN solo funciona para listas o conjuntos\n");
             nuevo = NULL;
+            exit(1);
         }
         break;
     }
@@ -465,6 +543,7 @@ tData eval(struct ast *a)
         nuevo = eval_memory_ast((struct memory_ast *)a);
         break;
     }
+    
     default:
     {
         printf("Error papu.");

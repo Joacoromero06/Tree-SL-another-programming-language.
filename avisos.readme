@@ -1,5 +1,21 @@
 En el zip se encuentra el pdf del informe
+
 Comando para compilar:
 ╰λ gcc -o tree string.c data.c ast.c lex.yy.c tree.tab.c
+
 Comando para ejecutar:
 ./tree
+
+Comando para comprimir los blocks
+ctrl k + ctrl 0 
+
+PENDIENTES
+// Expresiones Logicas
+
+// Expresiones Relacionales
+
+// fn_call
+
+// block 
+
+// fn definition, return_stm
