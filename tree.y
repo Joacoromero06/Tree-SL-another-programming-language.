@@ -13,9 +13,11 @@
     struct ast* a;
     struct symbol* s;
     tData td;
+    struct symlist* sl;
 }
 %token EOL T_ADD T_KICK T_TAKE
 %token T_IF T_ELSE T_ENDIF T_WHILE T_DO T_END T_FORALL T_FORANY
+%token T_FN T_ENDFN
 
 %token <td> NUM_INT ATOM NUM_DOUBLE  T_BOOL
 %token <s> ID
@@ -33,12 +35,15 @@
 
 %type <a> exp stm 
 %type <a> lit_struct list_exp
+%type <sl> list_id
+
 %start tree
 
 
 %%
 tree: 
 | tree stm EOL { printf("=> "); mostrarData(eval($2));printf("\n"); }
+| tree T_FN ID '(' list_id ')' ':' stm T_ENDFN { add_definition($3, $5, $8); }
 ; 
 stm: exp    {}
 | T_IF '(' exp ')' exp T_ENDIF                        { $$ = newflow(IF,     $3, NULL, $5 , NULL, NULL); }
@@ -86,8 +91,9 @@ exp: NUM_INT    { $$ = newast(INT   , NULL, NULL, $1); }
 | exp T_DIFF exp     { $$ = newast(DIFF,     $1, $3, NULL); }
 | exp T_CONTAINS exp { $$ = newast(CONTAINS, $1, $3, NULL); }
 
-| ID '=' exp        { $$ = newmemory_ast(ASIGNACION, $1, $3  );}
-| ID                { $$ = newmemory_ast(VAR_REF   , $1, NULL);}
+| ID '=' exp            { $$ = newmemory_ast(ASIGNACION, $1, $3  ); }
+| ID                    { $$ = newmemory_ast(VAR_REF   , $1, NULL); }
+| ID '(' list_exp ')'   { $$ = newmemory_ast(FN_CALL   , $1, $3  ); }
 ;
 
 lit_struct: '[' ']' { $$ = newast(LIST, NULL, NULL, createData(LIST));}
@@ -99,7 +105,8 @@ lit_struct: '[' ']' { $$ = newast(LIST, NULL, NULL, createData(LIST));}
 list_exp: exp       { $$ = $1; }
 | exp ',' list_exp  { $$ = newast(LIST_OF_AST, $1, $3, NULL); }
 ;
-
+list_id: ID         { $$ = addsym($1, NULL); }
+| ID ',' list_id    { $$ = addsym($1, $3  ); }
 %%
 int main(void){
     yyparse();

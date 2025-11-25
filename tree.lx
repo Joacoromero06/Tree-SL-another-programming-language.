@@ -7,6 +7,7 @@
 EXP ([eE][+-]?[0-9]+)
 
 %%
+":" |
 "|" |
 "=" |
 "," |
@@ -36,6 +37,9 @@ do        { return T_DO;      }
 end       { return T_END;     }
 forall    { return T_FORALL;  }
 forany    { return T_FORANY;  }
+
+fn     { return T_FN;    }
+endfn  { return T_ENDFN; }
 
 kick   { return T_KICK;   }
 add    { return T_ADD;    }

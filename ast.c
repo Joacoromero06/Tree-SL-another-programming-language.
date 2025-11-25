@@ -4,16 +4,9 @@
 
 struct symbol symtab[NHASH];
 
-int get_nodetype(struct ast *a)
-{
-    if (!a)
-    {
-        notificaciones(8000);
-        return 0;
-    }
-    return a->nodetype;
-}
-
+/*=======================================================================*/
+/*                             AST DEFINITION                            */
+/*=======================================================================*/
 struct ast *newast(int nodoValue, struct ast *left, struct ast *right, tData data)
 {
     struct ast *nuevo = malloc(sizeof(struct ast));
@@ -28,6 +21,36 @@ struct ast *newast(int nodoValue, struct ast *left, struct ast *right, tData dat
     nuevo->d = data;
     return nuevo;
 }
+int get_nodetype(struct ast *a)
+{
+    if (!a)
+    {
+        notificaciones(8000);
+        return 0;
+    }
+    return a->nodetype;
+}
+int get_widht(struct ast* a)
+{
+    if(!a)
+    {
+        printf("error puntero null en get_widht\n");
+        return 0;
+    }
+    int widht = 0;
+    while (get_nodetype(a) == LIST_OF_AST)
+    {
+        widht++;
+        a = a->r;
+    }
+    widht++; // the last ast != LIST_OF_AST
+    return widht;
+}
+/*=======================================================================*/
+
+/*=======================================================================*/
+/*                             FLOW DEFINITION                           */
+/*=======================================================================*/
 struct ast *newflow(int nodetype, struct ast *cond, struct ast *iterable, struct ast *tblock, struct ast *fblock, struct symbol *s)
 {
     struct flow *a = malloc(sizeof(struct flow));
@@ -44,6 +67,104 @@ struct ast *newflow(int nodetype, struct ast *cond, struct ast *iterable, struct
     a->s = s;
     return (struct ast *)a;
 }
+tData eval_flow(struct flow *a)
+{
+    struct ast *cond = a->cond;
+    struct ast *iterable = a->iterable;
+    struct ast *tblock = a->tblock;
+    struct ast *fblock = a->fblock;
+    struct symbol *s = a->s;
+
+    tData nuevo = NULL;
+
+    switch (get_nodetype((struct ast *)a)) // safe cast
+    {
+    case IF:
+    {
+        if (get_bool_value(eval(cond)))
+        {
+            nuevo = eval(tblock);
+        }
+        else
+        {
+            if (fblock != NULL)
+            {
+                nuevo = eval(fblock);
+            }
+            // nuevo NULL;
+        }
+        break;
+    }
+    case WHILE:
+    {
+        while (get_bool_value(eval(cond)))
+        {
+            nuevo = eval(tblock);
+        }
+        break;
+    }
+    case FORALL:
+    {   
+        tData collection = copiarData( eval (iterable) );
+        tData iterator = collection;
+        int i = 1;
+        while (iterator){
+            tData elemento = get_dato(iterator);
+            int booleano;
+            s->data = copiarData(elemento);
+            if(cond){
+                booleano = get_bool_value(eval(cond));
+            }
+            else {
+                booleano = 1;
+            }
+
+            if(booleano != 0){
+                nuevo = eval (tblock);
+                i++;
+            }
+            iterator = get_next(iterator);
+        }
+        freeData(collection); 
+        break;
+    }
+    case FORANY:  
+    {   
+        tData collection = copiarData( eval (iterable) );
+        tData iterator = collection;
+        int booleano;
+        int found = 0;
+
+        while (iterator && found == 0){
+            tData elemento = get_dato(iterator);
+            int booleano;
+            s->data = copiarData(elemento);
+            if(cond){
+                booleano = get_bool_value( eval(cond) );
+            }
+            else {
+                booleano = 1;
+            }
+
+            if(booleano != 0){
+                found = 1;
+                nuevo = eval (tblock);
+            }
+            iterator = get_next(iterator);
+        }
+        break;
+        freeData(collection);
+    }
+    default:
+        break;
+    }
+    return nuevo;
+}
+/*=======================================================================*/
+
+/*=======================================================================*/
+/*                      AST working MEMORY DEFINITION                    */
+/*=======================================================================*/
 struct ast *newmemory_ast(int nodetype, struct symbol *s, struct ast *a)
 {
     struct memory_ast *nvo = malloc(sizeof(struct memory_ast));
@@ -57,6 +178,48 @@ struct ast *newmemory_ast(int nodetype, struct symbol *s, struct ast *a)
     nvo->a = a;
     return (struct ast *)nvo;
 }
+tData eval_memory_ast(struct memory_ast * arbol)
+{
+    if (!arbol)
+    {
+        notificaciones(8004);
+        return NULL;
+    }
+
+    tData nuevo = NULL;
+    struct symbol* s = arbol->s;
+    struct ast* a    = arbol->a;
+
+    switch (get_nodetype( (struct ast*) arbol ))
+    {
+    case ASIGNACION:
+    {
+        nuevo = eval(a);
+        s->data = copiarData(nuevo);
+        break;
+    }
+    case VAR_REF:
+    {
+        nuevo = copiarData(s->data); // sin copiar ?
+        
+        if (nuevo == NULL)
+        {
+            notificaciones(8005);
+        }
+        break;
+    }
+    case FN_CALL:
+    {
+        
+    }
+    default:
+        printf("nodetype desconocido en eval_memory_ast\n"); /*esto nunca va a pasa*/
+        break;
+    }
+    return nuevo;
+}
+
+/*=======================================================================*/
 
 tData eval_list(struct ast *a) // no semantic errors
 {
@@ -256,133 +419,6 @@ tData evalOpSet(struct ast *a)
         break;
     default:
         printf("Operacion no encontrada papu.\n"); /*no entra realmente */
-        break;
-    }
-    return nuevo;
-}
-
-tData eval_flow(struct flow *a)
-{
-    struct ast *cond = a->cond;
-    struct ast *iterable = a->iterable;
-    struct ast *tblock = a->tblock;
-    struct ast *fblock = a->fblock;
-    struct symbol *s = a->s;
-
-    tData nuevo = NULL;
-
-    switch (get_nodetype((struct ast *)a)) // safe cast
-    {
-    case IF:
-    {
-        if (get_bool_value(eval(cond)))
-        {
-            nuevo = eval(tblock);
-        }
-        else
-        {
-            if (fblock != NULL)
-            {
-                nuevo = eval(fblock);
-            }
-            // nuevo NULL;
-        }
-        break;
-    }
-    case WHILE:
-    {
-        while (get_bool_value(eval(cond)))
-        {
-            nuevo = eval(tblock);
-        }
-        break;
-    }
-    case FORALL:
-    {   
-        tData collection = copiarData( eval (iterable) );
-        tData iterator = collection;
-        int i = 1;
-        while (iterator){
-            tData elemento = get_dato(iterator);
-            int booleano;
-            s->data = copiarData(elemento);
-            if(cond){
-                booleano = get_bool_value(eval(cond));
-            }
-            else {
-                booleano = 1;
-            }
-
-            if(booleano != 0){
-                nuevo = eval (tblock);
-                i++;
-            }
-            iterator = get_next(iterator);
-        }
-        freeData(collection); 
-        break;
-    }
-    case FORANY:  
-    {   
-        tData collection = copiarData( eval (iterable) );
-        tData iterator = collection;
-        int booleano;
-        int found = 0;
-
-        while (iterator && found == 0){
-            tData elemento = get_dato(iterator);
-            int booleano;
-            s->data = copiarData(elemento);
-            if(cond){
-                booleano = get_bool_value( eval(cond) );
-            }
-            else {
-                booleano = 1;
-            }
-
-            if(booleano != 0){
-                found = 1;
-                nuevo = eval (tblock);
-            }
-            iterator = get_next(iterator);
-        }
-        break;
-        freeData(collection);
-    }
-    default:
-        break;
-    }
-    return nuevo;
-}
-
-tData eval_memory_ast(struct memory_ast * arbol)
-{
-    if (!arbol)
-    {
-        notificaciones(8004);
-        return NULL;
-    }
-
-    tData nuevo = NULL;
-    struct symbol* s = arbol->s;
-    struct ast* a    = arbol->a;
-
-    switch (get_nodetype( (struct ast*) arbol ))
-    {
-    case ASIGNACION:
-        nuevo = eval(a);
-        s->data = copiarData(nuevo);
-        break;
-    case VAR_REF:
-        nuevo = copiarData(s->data); // sin copiar ?
-        
-        if (nuevo == NULL)
-        {
-            notificaciones(8005);
-        }
-        break;
-    default:
-        printf("nodetype desconocido en eval_memory_ast\n"); /*esto nunca va a pasa*/
         break;
     }
     return nuevo;
@@ -631,6 +667,7 @@ tData eval(struct ast *a)
 
     case ASIGNACION:
     case VAR_REF:
+    case FN_CALL:
     {
         nuevo = eval_memory_ast((struct memory_ast *)a);
         break;
@@ -646,6 +683,9 @@ tData eval(struct ast *a)
     return nuevo;
 }
 
+/*=======================================================================*/
+/*                          SYMBOL DEFINITION                            */
+/*=======================================================================*/
 unsigned int symhash(char *sym)
 {
     unsigned int hash = 0;
@@ -687,6 +727,70 @@ struct symbol *lookup(char *sym)
     printf("Overflow tabla de simbolos \n");
     return NULL;
 }
+void add_definition(struct symbol* s, struct symlist* sl, struct ast* body)
+{
+    if(s->args)
+    {
+        free_symlist(s->args);
+    }
+    if(s->body)
+    {
+        // treefree(s->body);
+    }
+    s->args = sl;
+    s->body = body;
+}
+/*=======================================================================*/
+
+/*=======================================================================*/
+/*                          SYMLIST DEFINITION                           */
+/*=======================================================================*/
+struct symlist* addsym(struct symbol* s, struct symlist* sl)
+{
+    struct symlist* lista = malloc(sizeof(struct symlist));
+    if(!lista)
+    {
+        printf("error en addsym sin memoria\n"); 
+        return NULL;
+    }
+    lista->s = s;
+    lista->next = sl;
+    return lista;
+}
+void free_symlist(struct symlist* sl)
+{
+    if(!sl)
+    {
+        return;
+    }
+    struct symlist* next = sl->next;
+    free(sl);
+    free_symlist(next);
+    /*struct symlist* next;
+    while (sl)
+    {
+        next = sl->next;
+        free(sl);
+        sl = next;
+    }
+    */
+}
+int compute_size(struct symlist* sl)
+{
+    if(!sl)
+    {
+        printf("posible error puntero null en compute_size\n");
+        return 0;
+    }
+    int size = 0;
+    while (sl)
+    {
+        size ++;
+        sl = sl->next;
+    }
+    return size;  
+}
+/*=======================================================================*/
 
 int yyerror(char *s)
 {

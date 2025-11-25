@@ -73,12 +73,13 @@
 /*=======================================================================*/
 #define VAR_REF 6000
 #define ASIGNACION 6001
-// llamada a funciones
+#define FN_DEFINITION 6002
+#define FN_CALL 6002
 
 /*=======================================================================*/
 
 /*=======================================================================*/
-/*nodetypes for ast that represent classic arithmetic expression         */
+/*nodetypes for ast that represent relational expression         */
 /*=======================================================================*/
 #define MAYOR 7000
 #define MENOR 7001
