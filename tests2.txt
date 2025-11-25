@@ -1,0 +1,13 @@
+fn suma(x,y): 
+    x+y;
+endfn
+fn fact(n):
+    if(n==0)
+        1;
+    else
+        n*fact(n-1);
+    endif
+endfn
+main:
+    if( fact(4) == 24 ) true; else false; endif
+endmain

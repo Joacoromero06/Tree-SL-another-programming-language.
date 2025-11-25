@@ -210,7 +210,74 @@ tData eval_memory_ast(struct memory_ast * arbol)
     }
     case FN_CALL:
     {
+        struct symbol*   f = s;
+        struct ast* params = a;
+        struct symlist* sl = f->args;
+        struct ast*   body = f->body;
+
+        int nargs = compute_size(sl); 
+        int widht   = get_widht(params);
+        if(nargs != widht)
+        {
+            printf("la cantidad de parametros no coincide con los esperados\n");
+            return NULL;
+        }
+
+        tData* new_values = malloc(sizeof(tData)*nargs);
+        tData* old_values = malloc(sizeof(tData)*nargs);
+
+        if(!new_values || !old_values)
+        {
+            printf("sin memoria en FN_CALL\n");
+            return NULL;
+        }
+
+        // Compute new_datas
+        struct ast* nav_ast = params;
+        for(int i = 0; i < nargs; i++)
+        {
+            if( get_nodetype(nav_ast) == LIST_OF_AST )
+            {
+                new_values[i] = eval(nav_ast->l);
+                nav_ast = nav_ast->r;
+            }
+            else
+            {
+                new_values[i] = eval(nav_ast);
+            }
+        }
+
+        // Save old_values of the variables
+        // Update new_values to the variables
+        struct symlist* nav_sl = sl;
+        for(int i = 0; i < nargs; i++)
+        {
+            old_values[i] = nav_sl->s->data;
+            nav_sl->s->data   = new_values[i];
+            if(!nav_sl)
+            {
+                printf("error en FN_CALL debido a compute_size\n");
+                return NULL;
+            }
+            nav_sl = nav_sl->next;
+        }
         
+        // Eval body with variables.data updated
+        nuevo = eval(body);
+
+        // Take back old_values to variables.data
+        nav_sl = sl;
+        for(int i = 0; i < nargs; i++)
+        {   
+            nav_sl->s->data = old_values[i];
+            if(!sl)
+            {
+                printf("error en FN_CALL debido a compute_size\n");
+                return NULL;
+            }
+            nav_sl = nav_sl->next;
+        }
+        break;
     }
     default:
         printf("nodetype desconocido en eval_memory_ast\n"); /*esto nunca va a pasa*/
@@ -218,7 +285,6 @@ tData eval_memory_ast(struct memory_ast * arbol)
     }
     return nuevo;
 }
-
 /*=======================================================================*/
 
 tData eval_list(struct ast *a) // no semantic errors
@@ -271,11 +337,11 @@ tData eval_log (struct ast *a){
         exit(1);
         }
 
-        if(!get_bool_value(A) && !get_bool_value(B)){
-            return createBool("false");
+        if(get_bool_value(A) && get_bool_value(B)){
+            return createBool("true");
         }
 
-        return createBool("true");
+        return createBool("false");
     }    
     break;
 
@@ -722,6 +788,7 @@ tData eval(struct ast *a)
         nuevo = eval_log(a);
         break;
     }
+   
     case IF:
     case WHILE:
     case FORALL:
@@ -738,17 +805,33 @@ tData eval(struct ast *a)
         nuevo = eval_memory_ast((struct memory_ast *)a);
         break;
     }
+   
     case GET: 
-        tData element=NULL;
-        tData conj_aux=NULL;
-        element=eval(left);
-        conj_aux=eval(right);
+    {
+        tData element  = NULL;
+        tData conj_aux = NULL;
+        element  = eval(left);
+        conj_aux = eval(right);
+
         if(get_tipo(element) == INT && get_tipo(conj_aux) == SET){
-            int posi=get_value(element);
-            nuevo = elemento_pos(conj_aux, posi);
+            int pos = get_value(element);
+            nuevo   = elemento_pos(conj_aux, pos);
         }
         //llama error notiicaciones
     break;
+    }
+    
+    case BLOCK:
+    {
+        /*while (get_nodetype(a) == BLOCK)
+        {
+            nuevo = eval(a->l);
+            a = a->r;
+        }
+        nuevo = eval(a);*/
+        eval(left); nuevo = eval(right);        
+        break;
+    }
     default:
     {
         printf("Error papu.");

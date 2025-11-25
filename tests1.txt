@@ -1,0 +1,4 @@
+$tree
+2+2
+get 3 from {1,2} union {0, 1}
+get 1 from {1,2}

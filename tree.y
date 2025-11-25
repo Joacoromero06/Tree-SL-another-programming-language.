@@ -17,7 +17,8 @@
 }
 %token EOL T_ADD T_KICK T_TAKE
 %token T_IF T_ELSE T_ENDIF T_WHILE T_DO T_END T_FORALL T_FORANY
-%token T_FN T_ENDFN
+%token T_FN T_ENDFN 
+%token T_MAIN T_ENDMAIN T_PESOS_TREE
 
 %token <td> NUM_INT ATOM NUM_DOUBLE  T_BOOL
 %token <s> ID
@@ -37,7 +38,7 @@
 %left '*' '/'
 %right T_MENOS_UNARIO
 
-%type <a> exp stm 
+%type <a> exp stm block
 %type <a> lit_struct list_exp
 %type <sl> list_id
 
@@ -46,13 +47,32 @@
 
 %%
 tree: 
-| tree stm EOL { printf("=> "); mostrarData(eval($2));printf("\n"); }
-| tree T_FN ID '(' list_id ')' ':' stm T_ENDFN { add_definition($3, $5, $8); }
+| T_PESOS_TREE EOL interpreter_tree
+| defs main
+;
+
+defs:         { printf("deriva epsilon defs\n"); }  
+| defs fn_def { printf("deriva fn_def  defs\n"); }
 ; 
-stm: exp    {}
-| T_IF '(' exp ')' exp T_ENDIF                        { $$ = newflow(IF,     $3, NULL, $5 , NULL, NULL); }
-| T_IF '(' exp ')' exp T_ELSE exp T_ENDIF             { $$ = newflow(IF,     $3, NULL, $5 , $7  , NULL); }
-| T_WHILE '(' exp ')' T_DO exp T_END                  { $$ = newflow(WHILE,  $3, NULL, $6 , NULL, NULL); }
+main: T_MAIN ':' block T_ENDMAIN { printf("output: "); mostrarData(eval($3)); printf("\nEjecion finalizada\n"); }
+; 
+
+interpreter_tree:
+| interpreter_tree exp    EOL { printf("=> "); mostrarData(eval($2)); printf("\n"); }
+| interpreter_tree stm    EOL { printf("=> "); mostrarData(eval($2)); printf("\n"); }
+| interpreter_tree fn_def EOL { printf("Funcion Definida.\n"); }  
+; 
+
+
+block:      { $$ = NULL; printf("deriva epsilon block\n"); }
+| stm block { $$ = ($2 == NULL)? $1: newast(BLOCK, $1, $2, NULL); printf("deriva stm block\n"); }
+;
+
+stm: exp ';'  { $$ = $1; }
+| T_IF '(' exp ')' block T_ENDIF                      { $$ = newflow(IF,     $3, NULL, $5 , NULL, NULL); }
+| T_IF '(' exp ')' block T_ELSE  block T_ENDIF        { $$ = newflow(IF,     $3, NULL, $5 , $7  , NULL); }
+
+| T_WHILE '(' exp ')' T_DO block T_END                  { $$ = newflow(WHILE,  $3, NULL, $6 , NULL, NULL); }
 
 | T_FORALL '(' ID T_IN exp '|' exp ')' T_DO stm T_END { $$ = newflow(FORALL, $7, $5  , $10, NULL, $3  ); }
 | T_FORANY '(' ID T_IN exp '|' exp ')' T_DO stm T_END { $$ = newflow(FORANY, $7, $5  , $10, NULL, $3  ); }
@@ -93,12 +113,14 @@ exp: NUM_INT    { $$ = newast(INT   , NULL, NULL, $1); }
 | T_TAKE exp T_FROM exp { $$ = newast(TAKE,  $2 , $4, NULL); }
 | exp T_CONCAT exp      { $$ = newast(CONCAT,$1 , $3, NULL); }
 
-| exp T_IN exp       { $$ = newast(IN,       $1, $3, NULL); }
-| exp T_UNION exp    { $$ = newast(UNION,    $1, $3, NULL); }
-| exp T_INTER exp    { $$ = newast(INTER,    $1, $3, NULL); }
-| exp T_DIFF exp     { $$ = newast(DIFF,     $1, $3, NULL); }
-| exp T_CONTAINS exp { $$ = newast(CONTAINS, $1, $3, NULL); }
-| T_GET exp T_FROM exp { $$ = newast(GET,      $2, $4, NULL); }
+| exp T_IN exp         { $$ = newast(IN,       $1, $3, NULL); }
+| exp T_CONTAINS exp   { $$ = newast(CONTAINS, $1, $3, NULL); }
+
+| exp T_UNION exp      { $$ = newast(UNION,    $1, $3, NULL); }
+| exp T_INTER exp      { $$ = newast(INTER,    $1, $3, NULL); }
+| exp T_DIFF exp       { $$ = newast(DIFF,     $1, $3, NULL); }
+
+| T_GET exp T_FROM exp %prec T_GET { $$ = newast(GET,      $2, $4, NULL); }
 
 | ID '=' exp            { $$ = newmemory_ast(ASIGNACION, $1, $3  ); }
 | ID                    { $$ = newmemory_ast(VAR_REF   , $1, NULL); }
@@ -116,6 +138,10 @@ list_exp: exp       { $$ = $1; }
 ;
 list_id: ID         { $$ = addsym($1, NULL); }
 | ID ',' list_id    { $$ = addsym($1, $3  ); }
+;
+
+fn_def: T_FN ID '(' list_id ')' ':' stm T_ENDFN { add_definition($2, $4, $7); }
+; 
 %%
 int main(void){
     yyparse();
