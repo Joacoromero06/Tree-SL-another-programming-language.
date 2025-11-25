@@ -250,6 +250,67 @@ tData eval_set(struct ast *a)  // no semantic errors
     agregarData(&nuevo, eval(nav));
     return nuevo;
 }
+tData eval_log (struct ast *a){
+
+    struct ast *left = a->l;
+    struct ast *right = a->r;
+
+    tData A = NULL;
+    if (left){
+        A = eval (left);
+    }
+    tData B = eval(right);
+
+    switch(get_nodetype(a)){
+    
+    case AND:
+    {
+        if( !left || !right)
+        {
+        notificaciones(9000); // no deberia pasar
+        exit(1);
+        }
+
+        if(!get_bool_value(A) && !get_bool_value(B)){
+            return createBool("false");
+        }
+
+        return createBool("true");
+    }    
+    break;
+
+    case OR:
+    {
+        if( !left || !right)
+        {
+        notificaciones(9000); // no deberia pasar
+        exit(1);
+        }
+
+        if(get_bool_value(A) || get_bool_value(B)){
+            return createBool("true");
+        }
+
+        return createBool("false");
+    }
+    break;
+
+    case NOT:
+    {   
+        tData nuevo = NULL;
+        if(!right)
+        {
+        notificaciones(9000); // no deberia pasar
+        exit(1); 
+        }
+        nuevo = (get_bool_value(B)) ? createBool("false") : createBool("true");
+        return nuevo;
+    }
+    break;
+
+    }
+    return NULL;
+}
 
 tData evalOpList(struct ast *a)
 {
@@ -389,7 +450,6 @@ tData evalOpSet(struct ast *a)
         notificaciones(9000);
         exit(1);
     }
-
     if (get_tipo(conj_1) != SET || get_tipo(conj_2) != SET)
     {
         printf("Operacion valida solo para conjuntos\n");
@@ -620,7 +680,7 @@ tData eval(struct ast *a)
     case UNION:
     case INTER:
     case DIFF:
-    case CONTAINS:
+    case CONTAINS: 
     {
         nuevo = evalOpSet(a);
         break;
@@ -655,7 +715,13 @@ tData eval(struct ast *a)
         }
         break;
     }
-
+    case AND:
+    case OR:
+    case NOT:
+    {
+        nuevo = eval_log(a);
+        break;
+    }
     case IF:
     case WHILE:
     case FORALL:
@@ -672,7 +738,17 @@ tData eval(struct ast *a)
         nuevo = eval_memory_ast((struct memory_ast *)a);
         break;
     }
-    
+    case GET: 
+        tData element=NULL;
+        tData conj_aux=NULL;
+        element=eval(left);
+        conj_aux=eval(right);
+        if(get_tipo(element) == INT && get_tipo(conj_aux) == SET){
+            int posi=get_value(element);
+            nuevo = elemento_pos(conj_aux, posi);
+        }
+        //llama error notiicaciones
+    break;
     default:
     {
         printf("Error papu.");
@@ -806,8 +882,8 @@ void notificaciones(int caso){
         case 8003 : printf("\nError 80003: Sin en estructura newmemory.\n"); break;
         case 8004 : printf("\nError 8004: Puntero nulo.\n");break;
         case 8005 : printf("\nError 8005: Referencia a variable no inicializada.\n"); break;
-        /*Error *e ejecucion/
-        case 9000 : printf("\nError 200: Error de ejecucion. Revise la entrada de datos.\n"); break;
+        /*Error *e ejecucion*/
+        case 9000 : printf("\nError 9000: Error de ejecucion. Revise la entrada de datos.\n"); break;
         /*Error operaciones entre listas*/
         case 10000 : printf("\nError 300: La posicion es mayor al tamanio de la lista.\n"); break;
         case 10001 : printf("\nError 301: El primer elemento debe ser un tipo INT.\n"); break;

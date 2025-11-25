@@ -1,7 +1,7 @@
 %option noyywrap
 %{
     #include "data.h"
-    #include "tree.tab.h"  
+    #include "tree.tab.h"
     #include "ast.h"
 %}
 EXP ([eE][+-]?[0-9]+)
@@ -29,6 +29,10 @@ EXP ([eE][+-]?[0-9]+)
 "=="  { return T_IGUAL; }
 "!="  { return T_DISTINTO; }
 
+and   { return T_AND; }
+or    { return T_OR; }
+not   { return T_NOT; }
+
 if        { return T_IF;      }
 else      { return T_ELSE;    }
 endif     { return T_ENDIF;   }
@@ -52,6 +56,7 @@ in        { return T_IN; }
 union     { return T_UNION; }
 inter     { return T_INTER; }
 diff      { return T_DIFF;  }
+\get       { return T_GET; }
 \contains { return T_CONTAINS; }
 
 "true" |

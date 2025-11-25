@@ -73,21 +73,25 @@ extern int yydebug;
     NUM_DOUBLE = 274,              /* NUM_DOUBLE  */
     T_BOOL = 275,                  /* T_BOOL  */
     ID = 276,                      /* ID  */
-    T_MAYOR = 277,                 /* T_MAYOR  */
-    T_MAYOR_IGUAL = 278,           /* T_MAYOR_IGUAL  */
-    T_MENOR = 279,                 /* T_MENOR  */
-    T_MENOR_IGUAL = 280,           /* T_MENOR_IGUAL  */
-    T_IGUAL = 281,                 /* T_IGUAL  */
-    T_DISTINTO = 282,              /* T_DISTINTO  */
-    T_IN = 283,                    /* T_IN  */
-    T_CONTAINS = 284,              /* T_CONTAINS  */
-    T_UNION = 285,                 /* T_UNION  */
-    T_INTER = 286,                 /* T_INTER  */
-    T_DIFF = 287,                  /* T_DIFF  */
-    T_CONCAT = 288,                /* T_CONCAT  */
-    T_FROM = 289,                  /* T_FROM  */
-    T_TO = 290,                    /* T_TO  */
-    T_MENOS_UNARIO = 291           /* T_MENOS_UNARIO  */
+    T_NOT = 277,                   /* T_NOT  */
+    T_AND = 278,                   /* T_AND  */
+    T_OR = 279,                    /* T_OR  */
+    T_MAYOR = 280,                 /* T_MAYOR  */
+    T_MAYOR_IGUAL = 281,           /* T_MAYOR_IGUAL  */
+    T_MENOR = 282,                 /* T_MENOR  */
+    T_MENOR_IGUAL = 283,           /* T_MENOR_IGUAL  */
+    T_IGUAL = 284,                 /* T_IGUAL  */
+    T_DISTINTO = 285,              /* T_DISTINTO  */
+    T_IN = 286,                    /* T_IN  */
+    T_CONTAINS = 287,              /* T_CONTAINS  */
+    T_GET = 288,                   /* T_GET  */
+    T_UNION = 289,                 /* T_UNION  */
+    T_INTER = 290,                 /* T_INTER  */
+    T_DIFF = 291,                  /* T_DIFF  */
+    T_FROM = 292,                  /* T_FROM  */
+    T_CONCAT = 293,                /* T_CONCAT  */
+    T_TO = 294,                    /* T_TO  */
+    T_MENOS_UNARIO = 295           /* T_MENOS_UNARIO  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -103,7 +107,7 @@ union YYSTYPE
     tData td;
     struct symlist* sl;
 
-#line 107 "tree.tab.h"
+#line 111 "tree.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

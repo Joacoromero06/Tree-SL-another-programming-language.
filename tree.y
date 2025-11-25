@@ -23,12 +23,16 @@
 %token <s> ID
 
 %right '='
+%right T_NOT
+%left T_AND T_OR
 %left T_MAYOR T_MAYOR_IGUAL T_MENOR T_MENOR_IGUAL T_IGUAL T_DISTINTO T_IN T_CONTAINS
+%left T_GET
 %left T_UNION
 %left T_INTER
 %left T_DIFF
+%left T_FROM 
 %left T_CONCAT
-%left T_FROM T_TO
+%left T_TO
 %left '+' '-'
 %left '*' '/'
 %right T_MENOS_UNARIO
@@ -73,6 +77,10 @@ exp: NUM_INT    { $$ = newast(INT   , NULL, NULL, $1); }
 
 | '|' exp '|'   { $$ = newast(MODULO, $2, NULL, NULL); }
 
+| exp T_AND exp         { $$ = newast(AND        , $1, $3, NULL); }
+| exp T_OR exp          { $$ = newast(OR         , $1, $3, NULL); }
+| T_NOT exp             { $$ = newast(NOT      , NULL, $2, NULL); }
+
 | exp T_MAYOR exp       { $$ = newast(MAYOR      , $1, $3, NULL); }
 | exp T_MENOR exp       { $$ = newast(MENOR      , $1, $3, NULL); }
 | exp T_MAYOR_IGUAL exp { $$ = newast(MAYOR_IGUAL, $1, $3, NULL); }
@@ -90,6 +98,7 @@ exp: NUM_INT    { $$ = newast(INT   , NULL, NULL, $1); }
 | exp T_INTER exp    { $$ = newast(INTER,    $1, $3, NULL); }
 | exp T_DIFF exp     { $$ = newast(DIFF,     $1, $3, NULL); }
 | exp T_CONTAINS exp { $$ = newast(CONTAINS, $1, $3, NULL); }
+| T_GET exp T_FROM exp { $$ = newast(GET,      $2, $4, NULL); }
 
 | ID '=' exp            { $$ = newmemory_ast(ASIGNACION, $1, $3  ); }
 | ID                    { $$ = newmemory_ast(VAR_REF   , $1, NULL); }

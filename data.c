@@ -34,7 +34,7 @@ tData createData(int tipo)
 		break;
 
 	default:
-		printf("Error en createData tipo desconocido: %d\n");
+		printf("Error en createData tipo desconocido.\n");
 		break;
 	}
 	nvo->tipoNodo = tipo;
@@ -171,6 +171,7 @@ int get_tipo(tData a)
 int get_bool_value(tData a){
 	if(!a)
 	{
+		//printf("\nEs aqui\n");
 		printf("puntero null en get_bool_value\n");
 		return 0;
 	}
@@ -445,14 +446,18 @@ tData compara_igual(tData A, tData B)
 	
 	switch (get_tipo(A))
 	{
-	case INT: case BOOL: nuevo = (get_value(A) != get_value(B)) ? createBool("true") : createBool("false"); break;
-	case DOUBLE: nuevo = (get_real(A) != get_real(B)) ?  createBool("true"): createBool("false"); break;
+	case INT: case BOOL: nuevo = (get_value(A) == get_value(B)) ? createBool("true") : createBool("false"); break;
+	case DOUBLE: nuevo = (get_real(A) == get_real(B)) ?  createBool("true"): createBool("false"); break;
 	case SET: case LIST: 
 	{
 		nuevo = (Igualdad(A,B) == 0) ? createBool("true") : createBool("false");
 		break;
 	}
-	
+	case STR:
+		{
+			nuevo = (!compStr(get_cad(A), get_cad(B))) ? createBool("true") : createBool("false");
+		}
+		break;
 	default: printf("Error: hola diablo\n"); break;
 	}
 	return nuevo;
@@ -480,7 +485,11 @@ tData compara_distinto(tData A, tData B)
 		nuevo = (Igualdad(A,B) == 1) ? createBool("true") : createBool("false");
 		break;
 	}
-	
+	case STR:
+		{
+			nuevo = (compStr(get_cad(A), get_cad(B))) ? createBool("true") : createBool("false");
+		}
+		break;
 	default: printf("Error: hola diablo\n"); break;
 	}
 	return nuevo;
