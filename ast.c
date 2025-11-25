@@ -8,7 +8,7 @@ int get_nodetype(struct ast *a)
 {
     if (!a)
     {
-        yyerror("Error en get_nodettype() puntero nulo");
+        notificaciones(8000);
         return 0;
     }
     return a->nodetype;
@@ -19,12 +19,12 @@ struct ast *newast(int nodoValue, struct ast *left, struct ast *right, tData dat
     struct ast *nuevo = malloc(sizeof(struct ast));
     if (!nuevo)
     {
-        yyerror("sin memoria en newast");
+        notificaciones(8001);
         return NULL;
     }
     nuevo->nodetype = nodoValue;
     nuevo->l = left;
-    nuevo->r = right;
+    nuevo->r = right; 
     nuevo->d = data;
     return nuevo;
 }
@@ -33,7 +33,7 @@ struct ast *newflow(int nodetype, struct ast *cond, struct ast *iterable, struct
     struct flow *a = malloc(sizeof(struct flow));
     if (!a)
     {
-        printf("error malloc newflow\n");
+        notificaciones(8002);
         return NULL;
     }
     a->nodetype = nodetype;
@@ -49,7 +49,7 @@ struct ast *newmemory_ast(int nodetype, struct symbol *s, struct ast *a)
     struct memory_ast *nvo = malloc(sizeof(struct memory_ast));
     if (!nvo)
     {
-        printf("sin memoria en newmemory_ast\n");
+        notificaciones(8003);
         return NULL;
     }
     nvo->nodetype = nodetype;
@@ -60,37 +60,32 @@ struct ast *newmemory_ast(int nodetype, struct symbol *s, struct ast *a)
 
 tData eval_list(struct ast *a) // no semantic errors
 {
-    // a = newast(LIST, list_exp, NULL, createData(LIST));
-    // listt_exp = newast(LIST_OF_AST, $1, $3, NULL);
-
+    tData nuevo = createData(LIST);
     if (!a->l)
         return a->d; // lista vacia se va directo
-    tData *list_to_load = &(a->d);
-    struct ast *nav = a->l;
-
+    struct ast* nav = a->l;
     while (get_nodetype(nav) == LIST_OF_AST)
     {
-        agregarData(list_to_load, eval(nav->l));
-        nav = nav->r;
+        agregarData(&nuevo, eval(nav->l));
+         nav = nav->r;
     }
-    agregarData(list_to_load, eval(nav));
-    return (*list_to_load);
+    agregarData(&nuevo, eval(nav));      
+    return nuevo;
 }
 tData eval_set(struct ast *a)  // no semantic errors
 {
     if (!a->l)
-    {
         return a->d; // lista vacia se va directo
-    }
-    tData *set_to_load = &(a->d);
+    
+    tData nuevo = createData(SET);
     struct ast *nav = a->l;
     while (get_nodetype(nav) == LIST_OF_AST)
     {
-        agregarData(set_to_load, eval(nav->l));
+        agregarData(&nuevo, eval(nav->l));
         nav = nav->r;
     }
-    agregarData(set_to_load, eval(nav));
-    return (*set_to_load);
+    agregarData(&nuevo, eval(nav));
+    return nuevo;
 }
 
 tData evalOpList(struct ast *a)
@@ -105,7 +100,7 @@ tData evalOpList(struct ast *a)
 
     if( !aux_result || !list_result)
     {
-        printf("Run-Time Error\n");
+        notificaciones(9000); // no deberia pasar
         exit(1);
     }
 
@@ -119,7 +114,7 @@ tData evalOpList(struct ast *a)
             int posicion = get_value(aux_result); // eval(left)
             if ( posicion > tamanio(nuevo) )
             {
-                printf("Error semantico."); mostrarData(list_result); printf(" es demesiada pequeña para eliminiar su elem en posicion: %d\n", posicion);
+                notificaciones(10000); mostrarData(list_result); printf(" es demesiada pequeña para eliminiar su elem en posicion: %d\n", posicion);
                 exit(1);
             }
             else
@@ -132,12 +127,12 @@ tData evalOpList(struct ast *a)
             // mostrar linea de error
             if ( get_tipo(aux_result) != INT  )
             {
-                printf("Error semantico. "); mostrarData(aux_result); printf(" debe ser entero");
+                notificaciones(301); mostrarData(aux_result);
                 exit(1);
             }
             if ( get_tipo(list_result) != LIST )
             {
-                printf("Error semantico. "); mostrarData(list_result); printf(" debe ser lista");
+                notificaciones(10002); mostrarData(list_result);
                 exit(1);
             }
         }
@@ -155,11 +150,12 @@ tData evalOpList(struct ast *a)
             // mostrar linea de error
             if ( get_tipo(aux_result) != INT  )
             {
-                printf("Error semantico. "); mostrarData(aux_result); printf(" debe ser entero");
+                notificaciones(301); mostrarData(aux_result); 
                 exit(1);
             }
             if ( get_tipo(list_result) != LIST )
             {
+                notificaciones(10002);
                 exit(1);
             }
         }
@@ -172,7 +168,7 @@ tData evalOpList(struct ast *a)
             int posicion = get_value(aux_result);
             if ( posicion > tamanio(list_result) )
             {
-                printf("Error semantico."); mostrarData(list_result); printf(" es demesiada pequeña para obtener su elem en posicion: %d\n", posicion);
+                notificaciones(10000); mostrarData(list_result); 
                 exit(1);
             }
             else
@@ -185,12 +181,12 @@ tData evalOpList(struct ast *a)
             // mostrar linea de error
             if ( get_tipo(aux_result) != INT  )
             {
-                printf("Error semantico."); mostrarData(aux_result); printf(" debe ser entero");
+                notificaciones(10001); mostrarData(aux_result); 
                 exit(1);
             }
             if ( get_tipo(list_result) != LIST )
             {
-                printf("Error semantico."); mostrarData(list_result); printf(" debe ser lista");
+                notificaciones(10002); mostrarData(list_result); 
                 exit(1);
             }
         }
@@ -204,13 +200,13 @@ tData evalOpList(struct ast *a)
         }
         else
         {
-            printf("Erorr semantico solo se puede concatenar dos listas\n");
+            notificaciones(10003);
             exit(1);
         }
         break;
     }
     default:
-        printf("\nError papu 2.");
+        printf("\nError papu 2."); /* no entra nunca creo */
         break;
     }
     return nuevo;
@@ -227,7 +223,7 @@ tData evalOpSet(struct ast *a)
     
     if( !conj_1 || !conj_2)
     {
-        printf("Run-Time Error\n");
+        notificaciones(9000);
         exit(1);
     }
 
@@ -259,7 +255,7 @@ tData evalOpSet(struct ast *a)
         }
         break;
     default:
-        printf("Operacion no encontrada papu.\n");
+        printf("Operacion no encontrada papu.\n"); /*no entra realmente */
         break;
     }
     return nuevo;
@@ -299,43 +295,59 @@ tData eval_flow(struct flow *a)
         {
             nuevo = eval(tblock);
         }
+        break;
     }
     case FORALL:
-    {
-        tData data_iterable = copiarData(eval(iterable));
-        
-        int tam = tamanio(data_iterable);
-        for (int i = 1; i <= tam; i++) // forall ( x in [1,2] | x ) do 2 + 2 end // chequear i
-        {
-            tData elem_i = elemento_pos(data_iterable, i); // añadir que funcione para SET
-            s->data = copiarData(elem_i);
-
-            if ( get_bool_value(eval( cond )) )
-            {
-                nuevo = eval(tblock);
+    {   
+        tData collection = copiarData( eval (iterable) );
+        tData iterator = collection;
+        int i = 1;
+        while (iterator){
+            tData elemento = get_dato(iterator);
+            int booleano;
+            s->data = copiarData(elemento);
+            if(cond){
+                booleano = get_bool_value(eval(cond));
             }
+            else {
+                booleano = 1;
+            }
+
+            if(booleano != 0){
+                nuevo = eval (tblock);
+                i++;
+            }
+            iterator = get_next(iterator);
         }
+        freeData(collection); 
+        break;
     }
-    case FORANY:
-    {
-        tData data_iterable = copiarData(eval(iterable));
-        
-        int i, tam, band;
-        i = 1;
-        tam = tamanio(data_iterable);
-        band = 0;
+    case FORANY:  
+    {   
+        tData collection = copiarData( eval (iterable) );
+        tData iterator = collection;
+        int booleano;
+        int found = 0;
 
-        while ( i <= tam && !band ) 
-        {
-            tData elem_i = elemento_pos(data_iterable, i); 
-            s->data = copiarData(elem_i);
-            if ( get_bool_value( eval(cond) ) )
-            {
-                nuevo = eval(tblock);
-                band = 1;
+        while (iterator && found == 0){
+            tData elemento = get_dato(iterator);
+            int booleano;
+            s->data = copiarData(elemento);
+            if(cond){
+                booleano = get_bool_value( eval(cond) );
             }
-            i++;
+            else {
+                booleano = 1;
+            }
+
+            if(booleano != 0){
+                found = 1;
+                nuevo = eval (tblock);
+            }
+            iterator = get_next(iterator);
         }
+        break;
+        freeData(collection);
     }
     default:
         break;
@@ -347,7 +359,7 @@ tData eval_memory_ast(struct memory_ast * arbol)
 {
     if (!arbol)
     {
-        printf("puntero nulo en eval_memory_ast\n");
+        notificaciones(8004);
         return NULL;
     }
 
@@ -366,14 +378,74 @@ tData eval_memory_ast(struct memory_ast * arbol)
         
         if (nuevo == NULL)
         {
-            printf("Error referencia a variable no inicializada\n");
+            notificaciones(8005);
         }
         break;
     default:
-        printf("nodetype desconocido en eval_memory_ast\n");
+        printf("nodetype desconocido en eval_memory_ast\n"); /*esto nunca va a pasa*/
         break;
     }
     return nuevo;
+}
+
+tData compute_op_rel(int nodetype, tData eval_left, tData eval_right )
+{
+    if(!eval_left || !eval_right)
+	{
+		printf("puntero null en compara_menor");
+		return NULL;
+	}
+    
+    tData nuevo;
+    if(get_tipo(eval_left) != get_tipo(eval_right))
+    {
+        printf("Semantic Error los operadores de lasexpresiones relacionales deben ser del mismo tipo\n");
+        nuevo = NULL;
+        exit(1);
+    }
+    switch (nodetype)
+    {
+    case MAYOR:
+    {
+        nuevo = compara_mayor(eval_left, eval_right);
+        break;
+    }
+    
+    case MENOR:
+    {
+        nuevo = compara_menor(eval_left, eval_right);
+        break;
+    }
+        
+        
+    case MAYOR_IGUAL:
+    {
+        nuevo = compara_mayorigual(eval_left, eval_right);
+        break;
+    }
+        
+
+    case MENOR_IGUAL:
+    {   
+        nuevo = compara_menorigual(eval_left, eval_right);
+        break;
+    }
+
+    case IGUAL:
+    {   
+        nuevo = compara_igual(eval_left, eval_right);
+        break;
+    }
+
+    case DISTINTO:
+    {   
+        nuevo = compara_distinto(eval_left, eval_right);
+        break;
+    }
+
+    default:
+        break;
+    }
 }
 
 tData eval(struct ast *a)
@@ -480,6 +552,26 @@ tData eval(struct ast *a)
         break;
     }
     
+    case MAYOR:
+    case MENOR:
+    case MAYOR_IGUAL:
+    case MENOR_IGUAL:
+    case IGUAL:
+    case DISTINTO:
+    {
+        tData eval_left = eval(left);
+        tData eval_right = eval(right);
+        if(!eval_left || !eval_right)
+        {
+            printf("Run-Time Error \n");
+            nuevo = NULL;
+            exit(1);
+        }
+        nuevo = compute_op_rel(get_nodetype(a), eval_left, eval_right);
+
+        break;
+    }
+
     case KICK:
     case ADD:
     case CONCAT:
@@ -599,4 +691,25 @@ struct symbol *lookup(char *sym)
 int yyerror(char *s)
 {
     fprintf(stderr, "Error de sintaxis: %s", s);
+}
+
+void notificaciones(int caso){
+    switch(caso){
+        /*Errores de memoria mas bien generales*/
+        case 8000 : printf("\nError 8000: Puntero nulo en get_nodetype().\n"); break;
+        case 8001 : printf("\nError 8001: Sin memoria en newast. \n"); break;
+        case 8002 : printf("\nError 8002: Sin memoria para estructura de control."); break;
+        case 8003 : printf("\nError 80003: Sin en estructura newmemory.\n"); break;
+        case 8004 : printf("\nError 8004: Puntero nulo.\n");break;
+        case 8005 : printf("\nError 8005: Referencia a variable no inicializada.\n"); break;
+        /*Error *e ejecucion/
+        case 9000 : printf("\nError 200: Error de ejecucion. Revise la entrada de datos.\n"); break;
+        /*Error operaciones entre listas*/
+        case 10000 : printf("\nError 300: La posicion es mayor al tamanio de la lista.\n"); break;
+        case 10001 : printf("\nError 301: El primer elemento debe ser un tipo INT.\n"); break;
+        case 10002 : printf("\nError 302: El segundo elemento debe ser tipo LIST.\n"); break;
+        case 10003 : printf("\nError 303: Solo se pueden concatenar LIST.\n");break;
+        /*Error operaciones relacionales*/
+                
+    }
 }

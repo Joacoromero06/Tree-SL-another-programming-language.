@@ -21,7 +21,7 @@
 %token <s> ID
 
 %right '='
-%left T_IN T_CONTAINS
+%left T_MAYOR T_MAYOR_IGUAL T_MENOR T_MENOR_IGUAL T_IGUAL T_DISTINTO T_IN T_CONTAINS
 %left T_UNION
 %left T_INTER
 %left T_DIFF
@@ -45,14 +45,16 @@ stm: exp    {}
 | T_IF '(' exp ')' exp T_ELSE exp T_ENDIF             { $$ = newflow(IF,     $3, NULL, $5 , $7  , NULL); }
 | T_WHILE '(' exp ')' T_DO exp T_END                  { $$ = newflow(WHILE,  $3, NULL, $6 , NULL, NULL); }
 
-| T_FORALL '(' ID T_IN exp '|' exp ')' T_DO exp T_END { $$ = newflow(FORALL, $7, $5  , $10, NULL, $3  ); }
-| T_FORANY '(' ID T_IN exp '|' exp ')' T_DO exp T_END { $$ = newflow(FORANY, $7, $5  , $10, NULL, $3  ); }
+| T_FORALL '(' ID T_IN exp '|' exp ')' T_DO stm T_END { $$ = newflow(FORALL, $7, $5  , $10, NULL, $3  ); }
+| T_FORANY '(' ID T_IN exp '|' exp ')' T_DO stm T_END { $$ = newflow(FORANY, $7, $5  , $10, NULL, $3  ); }
+| T_FORALL '(' ID T_IN exp ')' T_DO stm T_END { $$ = newflow(FORALL, NULL, $5  , $8, NULL, $3  ); }
+| T_FORANY '(' ID T_IN exp ')' T_DO stm T_END { $$ = newflow(FORANY, NULL, $5  , $8, NULL, $3  ); }
 ;
 
-exp: NUM_INT    { $$ = newast(INT, NULL, NULL, $1);     }   
-| ATOM          { $$ = newast(STR, NULL, NULL, $1);     }
-| NUM_DOUBLE    { $$ = newast(DOUBLE, NULL, NULL, $1);  }
-| T_BOOL        { $$ = newast(BOOL, NULL, NULL, $1);    }
+exp: NUM_INT    { $$ = newast(INT   , NULL, NULL, $1); }   
+| ATOM          { $$ = newast(STR   , NULL, NULL, $1); }
+| NUM_DOUBLE    { $$ = newast(DOUBLE, NULL, NULL, $1); }
+| T_BOOL        { $$ = newast(BOOL  , NULL, NULL, $1); }
 | lit_struct    { $$ = $1;}    
 
 | exp '+' exp   { $$ = newast('+',$1,$3,NULL); }
@@ -65,6 +67,13 @@ exp: NUM_INT    { $$ = newast(INT, NULL, NULL, $1);     }
 | '-' exp %prec T_MENOS_UNARIO { $$ = newast(MENOS_UNARIO, $2, NULL, NULL); }
 
 | '|' exp '|'   { $$ = newast(MODULO, $2, NULL, NULL); }
+
+| exp T_MAYOR exp       { $$ = newast(MAYOR      , $1, $3, NULL); }
+| exp T_MENOR exp       { $$ = newast(MENOR      , $1, $3, NULL); }
+| exp T_MAYOR_IGUAL exp { $$ = newast(MAYOR_IGUAL, $1, $3, NULL); }
+| exp T_MENOR_IGUAL exp { $$ = newast(MENOR_IGUAL, $1, $3, NULL); }
+| exp T_DISTINTO exp    { $$ = newast(DISTINTO   , $1, $3, NULL); }
+| exp T_IGUAL exp       { $$ = newast(IGUAL      , $1, $3, NULL); }
 
 | T_ADD exp T_TO exp    { $$ = newast(ADD,   $2 , $4, NULL); }
 | T_KICK exp T_FROM exp { $$ = newast(KICK,  $2 , $4, NULL); }

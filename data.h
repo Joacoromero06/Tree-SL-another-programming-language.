@@ -45,6 +45,15 @@ tData restaData(tData, tData);
 tData prodData(tData, tData);
 tData cocData(tData, tData);
 
+// Operaciones Relacionales de tData
+tData compara_mayor(tData, tData);
+tData compara_menor(tData, tData);
+tData compara_mayorigual(tData, tData);
+tData compara_menorigual(tData, tData);
+tData compara_igual(tData, tData);
+tData compara_distinto(tData, tData);
+
+
 // Procedimientos basicos de tData
 int Igualdad(tData, tData);
 void mostrarData(tData);
@@ -70,5 +79,4 @@ tData elemento_pos(tData, int);
 int tamanio (tData);
 tData negar_data(tData);
 tData modulo_data(tData);
-
 #endif

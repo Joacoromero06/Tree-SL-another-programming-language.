@@ -315,6 +315,178 @@ tData cocData(tData a, tData b)
 }
 
 /*==========================================================================*/
+/*							OPERACIONES RELACIONALES							*/
+/*==========================================================================*/
+tData compara_mayor(tData A, tData B){
+	tData nuevo;
+	if(!A || !B)
+	{
+		printf("puntero null en compara_mayor\n");
+		return NULL;
+	}
+	if(get_tipo(A) != get_tipo(B))
+	{
+		printf("las comparaciones deben tener operandos de mismo tipo\n");
+		return NULL;
+	}
+	
+	switch (get_tipo(A))
+	{
+	case INT: nuevo = (get_value(A) > get_value(B)) ? createBool("true") : createBool("false"); break;
+	case DOUBLE: nuevo = (get_real(A) > get_real(B)) ?  createBool("true"): createBool("false"); break;
+	
+	case SET: case LIST: case BOOL:
+	{
+		printf("Error: No se pueden comparar usando mayor las estos tipos de datos \n");
+		break;
+	}
+	
+	default: printf("Error: hola diablo\n"); break;
+	}
+	return nuevo;
+}
+tData compara_menor(tData A, tData B)
+{	
+	tData nuevo;
+	if(!A || !B)
+	{
+		printf("puntero null en compara_menor\n");
+		return NULL;
+	}
+	if(get_tipo(A) != get_tipo(B))
+	{
+		printf("las comparaciones deben tener operandos de mismo tipo\n");
+		return NULL;
+	}
+	
+	switch (get_tipo(A))
+	{
+	case INT: nuevo = (get_value(A) < get_value(B)) ? createBool("true") : createBool("false"); break;
+	case DOUBLE: nuevo = (get_real(A) < get_real(B)) ?  createBool("true"): createBool("false"); break;
+	
+	case SET: case LIST: case BOOL:
+	{
+		printf("Error: No se pueden comparar usando menor las estos tipos de datos \n");
+		break;
+	}
+	default: printf("Error: hola diablo\n"); break;
+	}
+	return nuevo;
+}
+tData compara_mayorigual(tData A, tData B)
+{
+	tData nuevo;
+	if(!A || !B)
+	{
+		printf("puntero null en compara_mayorigual\n");
+		return NULL;
+	}
+	if(get_tipo(A) != get_tipo(B))
+	{
+		printf("las comparaciones deben tener operandos de mismo tipo\n");
+		return NULL;
+	}
+	
+	switch (get_tipo(A))
+	{
+	case INT: nuevo = (get_value(A) >= get_value(B)) ? createBool("true") : createBool("false"); break;
+	case DOUBLE: nuevo = (get_real(A) >= get_real(B)) ?  createBool("true"): createBool("false"); break;
+	
+	case SET: case LIST: case BOOL:
+	{
+		printf("Error: No se pueden comparar usando mayor-igual las estos tipos de datos \n");
+		break;
+	}
+	default: printf("Error: hola diablo\n"); break;
+	}
+	return nuevo;
+}
+tData compara_menorigual(tData A, tData B){
+	tData nuevo;
+	if(!A || !B)
+	{
+		printf("puntero null en compara_menorigual\n");
+		return NULL;
+	}
+	if(get_tipo(A) != get_tipo(B))
+	{
+		printf("las comparaciones deben tener operandos de mismo tipo\n");
+		return NULL;
+	}
+	
+	switch (get_tipo(A))
+	{
+	case INT: nuevo = (get_value(A) <= get_value(B)) ? createBool("true") : createBool("false"); break;
+	case DOUBLE: nuevo = (get_real(A) <= get_real(B)) ?  createBool("true"): createBool("false"); break;
+	
+	case SET: case LIST: case BOOL:
+	{
+		printf("Error: No se pueden comparar usando menor-igual las estos tipos de datos \n");
+		break;
+	}
+	
+	default: printf("Error: hola diablo\n"); break;
+	}
+	return nuevo;
+}
+tData compara_igual(tData A, tData B)
+{
+	tData nuevo;
+	if(!A || !B)
+	{
+		printf("puntero null en compara_igual\n");
+		return NULL;
+	}
+	if(get_tipo(A) != get_tipo(B))
+	{
+		printf("las comparaciones deben tener operandos de mismo tipo\n");
+		return NULL;
+	}
+	
+	switch (get_tipo(A))
+	{
+	case INT: case BOOL: nuevo = (get_value(A) != get_value(B)) ? createBool("true") : createBool("false"); break;
+	case DOUBLE: nuevo = (get_real(A) != get_real(B)) ?  createBool("true"): createBool("false"); break;
+	case SET: case LIST: 
+	{
+		nuevo = (Igualdad(A,B) == 0) ? createBool("true") : createBool("false");
+		break;
+	}
+	
+	default: printf("Error: hola diablo\n"); break;
+	}
+	return nuevo;
+}
+tData compara_distinto(tData A, tData B)
+{
+	tData nuevo;
+	if(!A || !B)
+	{
+		printf("puntero null en compara_distinto\n");
+		return NULL;
+	}
+	if(get_tipo(A) != get_tipo(B))
+	{
+		printf("las comparaciones deben tener operandos de mismo tipo\n");
+		return NULL;
+	}
+	
+	switch (get_tipo(A))
+	{
+	case INT: case BOOL: nuevo = (get_value(A) != get_value(B)) ? createBool("true") : createBool("false"); break;
+	case DOUBLE: nuevo = (get_real(A) != get_real(B)) ?  createBool("true"): createBool("false"); break;
+	case SET: case LIST: 
+	{
+		nuevo = (Igualdad(A,B) == 1) ? createBool("true") : createBool("false");
+		break;
+	}
+	
+	default: printf("Error: hola diablo\n"); break;
+	}
+	return nuevo;
+}
+
+/*==========================================================================*/
 /*							MODULOS BASICOS TDATA							*/
 /*==========================================================================*/
 void mostrarData(tData nodo)
@@ -484,6 +656,7 @@ void freeData(tData descartado)
 		freeData(descartado->dato);
 		freeData(descartado->sig);
 		break;
+	default: break;
 	}
 
 	free(descartado);
@@ -804,13 +977,13 @@ void eliminar_pos(tData *l, int pos)
 		{ // corresponde lista vacia
 			*l = createData(LIST);
 		}
-		// freeData(get_dato(nav));
-		// freeData(nav);
+		//freeData(get_dato(nav));
+		//freeData(nav);
 	}
 	else
 	{ // eliminacion en lista
 		set_next(&ant, get_next(nav));
-		freeData(nav);
+		//freeData(nav);
 	}
 }
 
@@ -935,6 +1108,11 @@ tData modulo_data(tData data)
 		printf("puntero null en modulo_data\n");
 		return 0;
 	}
+	if(get_tipo(data) == BOOL)
+	{
+		printf("Error en modulo_data data es de tipo bool\n");
+		return NULL;
+	}
 	switch (get_tipo(data))
 	{ 
 	case INT:
@@ -945,18 +1123,6 @@ tData modulo_data(tData data)
 	case DOUBLE:
 	{
 		modulo_data = createDouble(fabs(get_real(data)));
-		break;
-	}
-	case BOOL:
-	{
-		if (get_value(data))
-		{
-			modulo_data = createInt(1);
-		}
-		else
-		{
-			modulo_data = createInt(0);
-		}
 		break;
 	}
 	case STR:

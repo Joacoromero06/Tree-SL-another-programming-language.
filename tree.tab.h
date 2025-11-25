@@ -71,15 +71,21 @@ extern int yydebug;
     NUM_DOUBLE = 272,              /* NUM_DOUBLE  */
     T_BOOL = 273,                  /* T_BOOL  */
     ID = 274,                      /* ID  */
-    T_IN = 275,                    /* T_IN  */
-    T_CONTAINS = 276,              /* T_CONTAINS  */
-    T_UNION = 277,                 /* T_UNION  */
-    T_INTER = 278,                 /* T_INTER  */
-    T_DIFF = 279,                  /* T_DIFF  */
-    T_CONCAT = 280,                /* T_CONCAT  */
-    T_FROM = 281,                  /* T_FROM  */
-    T_TO = 282,                    /* T_TO  */
-    T_MENOS_UNARIO = 283           /* T_MENOS_UNARIO  */
+    T_MAYOR = 275,                 /* T_MAYOR  */
+    T_MAYOR_IGUAL = 276,           /* T_MAYOR_IGUAL  */
+    T_MENOR = 277,                 /* T_MENOR  */
+    T_MENOR_IGUAL = 278,           /* T_MENOR_IGUAL  */
+    T_IGUAL = 279,                 /* T_IGUAL  */
+    T_DISTINTO = 280,              /* T_DISTINTO  */
+    T_IN = 281,                    /* T_IN  */
+    T_CONTAINS = 282,              /* T_CONTAINS  */
+    T_UNION = 283,                 /* T_UNION  */
+    T_INTER = 284,                 /* T_INTER  */
+    T_DIFF = 285,                  /* T_DIFF  */
+    T_CONCAT = 286,                /* T_CONCAT  */
+    T_FROM = 287,                  /* T_FROM  */
+    T_TO = 288,                    /* T_TO  */
+    T_MENOS_UNARIO = 289           /* T_MENOS_UNARIO  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -94,7 +100,7 @@ union YYSTYPE
     struct symbol* s;
     tData td;
 
-#line 98 "tree.tab.h"
+#line 104 "tree.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

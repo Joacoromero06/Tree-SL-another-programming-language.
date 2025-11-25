@@ -21,6 +21,13 @@ EXP ([eE][+-]?[0-9]+)
 "*" |
 "/" {  return yytext[0]; }
 
+">"   { return T_MAYOR; }
+"<"   { return T_MENOR; }
+">="  { return T_MAYOR_IGUAL; }
+"<="  { return T_MENOR_IGUAL; }
+"=="  { return T_IGUAL; }
+"!="  { return T_DISTINTO; }
+
 if        { return T_IF;      }
 else      { return T_ELSE;    }
 endif     { return T_ENDIF;   }

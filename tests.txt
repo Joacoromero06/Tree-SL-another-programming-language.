@@ -1,0 +1,11 @@
+l = [-1,-2,-3,1,2,3] 
+naturales = {1,2,3,4,5,6,7,8}
+X = {}
+Y = {}
+forall(x in l | x in naturales) do  X = {x} union X  end 
+x = 3
+if (x > 0) X = {x} union X else Y = {x} union Y endif
+forall(x in l | x in naturales) do  if (x) X = {x} union X endif end 
+z = 0
+forall(z in [10,12,14]) do z=z end
+z1 = z  

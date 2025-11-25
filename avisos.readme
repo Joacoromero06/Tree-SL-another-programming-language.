@@ -4,7 +4,7 @@ Comando para compilar:
 ╰λ gcc -o tree string.c data.c ast.c lex.yy.c tree.tab.c
 
 Comando para ejecutar:
-./tree
+./tree < tests.txt
 
 Comando para comprimir los blocks
 ctrl k + ctrl 0 

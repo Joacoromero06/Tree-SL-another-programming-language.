@@ -42,3 +42,5 @@ tData eval(struct ast*);
 
 
 int yyerror(char*);
+
+void notificaciones(int);
