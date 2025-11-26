@@ -1032,7 +1032,7 @@ int tamanio(tData A)
 	
 	if ( A->tipoNodo != SET && A->tipoNodo != LIST )
 		return 1;
-	
+		
 
 	int c = 0;
 	if ( get_next(A) == NULL )
@@ -1043,12 +1043,13 @@ int tamanio(tData A)
 	
 		}
 	}
+	
 	while (A != NULL)
 	{
 		c++;
 		A = A->sig;
 	}
-
+	
 	return c;
 }
 tData negar_data(tData data)

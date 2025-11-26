@@ -10,12 +10,10 @@ Comando para comprimir los blocks
 ctrl k + ctrl 0 
 
 PENDIENTES
-// Expresiones Logicas
+return_stm en main y funciones
 
-// Expresiones Relacionales
+// salte error si obtener elemento afuera de rango
 
-// fn_call
-
-// block 
-
-// fn definition, return_stm
+errores de sintaxis
+ 
+// comentarios mult assign print modulo

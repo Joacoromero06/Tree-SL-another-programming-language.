@@ -402,7 +402,8 @@ tData evalOpList(struct ast *a)
         {
             nuevo = (list_result);
             int posicion = get_value(aux_result); // eval(left)
-            if ( posicion > tamanio(nuevo) )
+           
+            if ( posicion > tamanio(list_result) )
             {
                 notificaciones(10000); mostrarData(list_result); printf(" es demesiada pequeña para eliminiar su elem en posicion: %d\n", posicion);
                 exit(1);
@@ -808,16 +809,33 @@ tData eval(struct ast *a)
    
     case GET: 
     {
-        tData element  = NULL;
-        tData conj_aux = NULL;
-        element  = eval(left);
-        conj_aux = eval(right);
-
-        if(get_tipo(element) == INT && get_tipo(conj_aux) == SET){
-            int pos = get_value(element);
-            nuevo   = elemento_pos(conj_aux, pos);
+        tData pos_data = eval(left);
+        tData conj_aux = eval(right);
+        
+        if(get_tipo(pos_data) != INT || get_tipo(conj_aux) != SET)
+        {
+            if ( get_tipo(pos_data) != INT  )
+            {
+                notificaciones(301); mostrarData(pos_data);
+                exit(1);
+            }
+            if ( get_tipo(conj_aux) != SET )
+            {
+                notificaciones(11000); mostrarData(conj_aux);
+                exit(1);
+            }
         }
-        //llama error notiicaciones
+         
+        int pos = get_value(pos_data);
+         
+        if ( pos > tamanio(conj_aux) )
+        {
+            mostrarData(conj_aux); printf(" es demesiada pequeña para eliminiar su elem en posicion: %d\n", pos);
+            exit(1);
+        }
+         
+        nuevo   = elemento_pos(conj_aux, pos);
+        
     break;
     }
     
@@ -958,7 +976,7 @@ int yyerror(char *s)
 
 void notificaciones(int caso){
     switch(caso){
-        /*Errores de memoria mas bien generales*/
+        /*Errores de memoria*/
         case 8000 : printf("\nError 8000: Puntero nulo en get_nodetype().\n"); break;
         case 8001 : printf("\nError 8001: Sin memoria en newast. \n"); break;
         case 8002 : printf("\nError 8002: Sin memoria para estructura de control."); break;
@@ -972,6 +990,8 @@ void notificaciones(int caso){
         case 10001 : printf("\nError 301: El primer elemento debe ser un tipo INT.\n"); break;
         case 10002 : printf("\nError 302: El segundo elemento debe ser tipo LIST.\n"); break;
         case 10003 : printf("\nError 303: Solo se pueden concatenar LIST.\n");break;
+        /*Error operaciones entre conjuntos*/
+        case 11000 : printf("\nError 400 El segundo elemento debe ser tipo SET.\n");break;
         /*Error operaciones relacionales*/
                 
     }

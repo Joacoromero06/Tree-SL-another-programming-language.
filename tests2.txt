@@ -10,4 +10,14 @@ fn fact(n):
 endfn
 main:
     if( fact(4) == 24 ) true; else false; endif
+    x = [1,2,3];
+    acum = 0;
+    forall(x in x| x == 2) do 
+        if(acum == 0) 
+            acum = x;
+        else
+            acum = 10;
+        endif
+    end
+    acum;
 endmain
