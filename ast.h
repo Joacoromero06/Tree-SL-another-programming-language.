@@ -65,8 +65,9 @@ struct memory_ast{
     int nodetype;
     struct symbol* s;
     struct ast* a; // value | body | params actuales
+    struct symlist* sl;
 };
-struct ast* newmemory_ast(int, struct symbol*, struct ast*);
+struct ast* newmemory_ast(int, struct symbol*, struct ast*, struct symlist*);
 /*=======================================================================*/
 
 tData eval(struct ast*);

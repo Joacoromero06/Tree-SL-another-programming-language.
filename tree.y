@@ -18,7 +18,7 @@
 %token EOL T_FROM T_TO
 %token T_IF T_ELSE T_ENDIF T_WHILE T_DO T_END T_FORALL T_FORANY
 %token T_FN T_ENDFN 
-%token T_MAIN T_ENDMAIN T_PESOS_TREE
+%token T_MAIN T_ENDMAIN T_PESOS_TREE T_PRINT T_RETURN T_LET T_FLECHA
 
 %token <td> NUM_INT ATOM NUM_DOUBLE  T_BOOL
 %token <s> ID
@@ -36,7 +36,7 @@
 %left T_CONCAT 
 %nonassoc T_ADD
 %left '+' '-'
-%left '*' '/'
+%left '*' '/' '%'
 %right T_MENOS_UNARIO
 
 %type <a> exp stm block
@@ -55,7 +55,10 @@ tree:
 defs:         {  }  
 | defs fn_def {  }
 ; 
-main: T_MAIN ':' block T_ENDMAIN { printf(">>> "); mostrarData(eval($3)); printf("\nEjecion finalizada\n"); }
+main: T_MAIN ':' block T_ENDMAIN { 
+    printf(">>> \n");  //mostrarData(eval($3));
+    eval($3); printf("\nEjecion finalizada\n"); 
+    }
 ; 
 
 interpreter_tree:
@@ -70,6 +73,8 @@ block:      { $$ = NULL; }
 ;
 
 stm: exp ';'  { $$ = $1; }
+| T_RETURN exp ';'        { $$ = newast(RETURN, $2, NULL, NULL); }  
+
 | T_IF '(' exp ')' block T_ENDIF                      { $$ = newflow(IF,     $3, NULL, $5 , NULL, NULL); }
 | T_IF '(' exp ')' block T_ELSE  block T_ENDIF        { $$ = newflow(IF,     $3, NULL, $5 , $7  , NULL); }
 
@@ -79,9 +84,13 @@ stm: exp ';'  { $$ = $1; }
 | T_FORANY '(' ID T_IN exp '|' exp ')' T_DO block T_END { $$ = newflow(FORANY, $7, $5  , $10, NULL, $3  ); }
 | T_FORALL '(' ID T_IN exp ')' T_DO block T_END { $$ = newflow(FORALL, NULL, $5  , $8, NULL, $3  ); }
 | T_FORANY '(' ID T_IN exp ')' T_DO block T_END { $$ = newflow(FORANY, NULL, $5  , $8, NULL, $3  ); }
+
+| T_LET ID T_FLECHA '(' list_id ')' ';' { $$ = newmemory_ast(ASSIGN_MULTIPLE, $2, NULL, $5); }
+
+| T_PRINT '(' exp ')' ';' { $$ = newast(PRINT, $3, NULL, NULL); }
 ;
 
-exp: ID '=' exp            { $$ = newmemory_ast(ASIGNACION, $1, $3  ); }
+exp: ID '=' exp            { $$ = newmemory_ast(ASIGNACION, $1, $3, NULL  ); }
 
 | exp T_AND exp         { $$ = newast(AND        , $1, $3, NULL); }
 | exp T_OR exp          { $$ = newast(OR         , $1, $3, NULL); }
@@ -112,13 +121,15 @@ exp: ID '=' exp            { $$ = newmemory_ast(ASIGNACION, $1, $3  ); }
 | exp '-' exp   { $$ = newast('-',$1,$3,NULL); }
 | exp '*' exp   { $$ = newast('*',$1,$3,NULL); }
 | exp '/' exp   { $$ = newast('/',$1,$3,NULL); }
+| exp '%' exp   { $$ = newast('%',$1,$3,NULL); }
+
 
 | '(' exp ')'   { $$ = $2;}
 | '|' exp '|'   { $$ = newast(MODULO, $2, NULL, NULL); }
 | '-' exp %prec T_MENOS_UNARIO { $$ = newast(MENOS_UNARIO, $2, NULL, NULL); }
 
-| ID                    { $$ = newmemory_ast(VAR_REF   , $1, NULL); }
-| ID '(' list_exp ')'   { $$ = newmemory_ast(FN_CALL   , $1, $3  ); }
+| ID                    { $$ = newmemory_ast(VAR_REF   , $1, NULL, NULL); }
+| ID '(' list_exp ')'   { $$ = newmemory_ast(FN_CALL   , $1, $3  , NULL); }
 | NUM_INT       { $$ = newast(INT   , NULL, NULL, $1); }   
 | ATOM          { $$ = newast(STR   , NULL, NULL, $1); }
 | NUM_DOUBLE    { $$ = newast(DOUBLE, NULL, NULL, $1); }

@@ -250,7 +250,19 @@ str get_cad(tData a)
 		return a->cad;
 	}
 }
-
+int es_struct(tData a)
+{
+	if(!a)
+	{
+		printf("puntero null en es_struct\n");
+		return 0;
+	}
+	if(get_tipo(a) != LIST && get_tipo(a) != SET)
+	{
+		return 0;
+	}
+	return 1;
+}
 /*==========================================================================*/
 /*							OPERACIONES ARITMETICAS							*/
 /*==========================================================================*/
@@ -313,6 +325,20 @@ tData cocData(tData a, tData b)
 	if (a->tipoNodo == INT && b->tipoNodo == DOUBLE)
 		return createDouble(a->real / b->value);
 	return createInt(a->value / b->value);
+}
+tData modData(tData a, tData b)
+{
+	if(!a || !b)
+	{
+		printf("error punteroo null en modData\n");
+		return NULL;
+	} 
+	if(get_tipo(a) != get_tipo(b) || get_tipo(a) != INT)
+	{
+		printf("Error modData es solo para tData INT\n");
+		return NULL;
+	}
+	return createInt( get_value(a) % get_value(b) );
 }
 
 /*==========================================================================*/

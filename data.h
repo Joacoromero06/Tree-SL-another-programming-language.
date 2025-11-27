@@ -39,11 +39,14 @@ int get_value(tData);
 double get_real(tData);
 str get_cad(tData);
 
+int es_struct(tData);
+
 // Operaciones Artimeticas de tData
 tData sumaData(tData, tData);
 tData restaData(tData, tData);
 tData prodData(tData, tData);
 tData cocData(tData, tData);
+tData modData(tData, tData);
 
 // Operaciones Relacionales de tData
 tData compara_mayor(tData, tData);

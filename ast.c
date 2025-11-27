@@ -17,7 +17,7 @@ struct ast *newast(int nodoValue, struct ast *left, struct ast *right, tData dat
     }
     nuevo->nodetype = nodoValue;
     nuevo->l = left;
-    nuevo->r = right; 
+    nuevo->r = right;
     nuevo->d = data;
     return nuevo;
 }
@@ -30,9 +30,9 @@ int get_nodetype(struct ast *a)
     }
     return a->nodetype;
 }
-int get_widht(struct ast* a)
+int get_widht(struct ast *a)
 {
-    if(!a)
+    if (!a)
     {
         printf("error puntero null en get_widht\n");
         return 0;
@@ -104,51 +104,59 @@ tData eval_flow(struct flow *a)
         break;
     }
     case FORALL:
-    {   
-        tData collection = copiarData( eval (iterable) );
+    {
+        tData collection = copiarData(eval(iterable));
         tData iterator = collection;
         int i = 1;
-        while (iterator){
+        while (iterator)
+        {
             tData elemento = get_dato(iterator);
             int booleano;
-            s->data = copiarData(elemento);
-            if(cond){
+            s->data = copiarData(elemento); // sacar copiar data
+            if (cond != NULL)
+            {
                 booleano = get_bool_value(eval(cond));
             }
-            else {
+            else
+            {
                 booleano = 1;
             }
 
-            if(booleano != 0){
-                nuevo = eval (tblock);
+            if (booleano != 0)
+            {
+                nuevo = eval(tblock);
                 i++;
             }
             iterator = get_next(iterator);
         }
-        freeData(collection); 
+        freeData(collection);
         break;
     }
-    case FORANY:  
-    {   
-        tData collection = copiarData( eval (iterable) );
+    case FORANY:
+    {
+        tData collection = copiarData(eval(iterable));
         tData iterator = collection;
         int booleano;
         int found = 0;
 
-        while (iterator && found == 0){
+        while (iterator && found == 0)
+        {
             tData elemento = get_dato(iterator);
             int booleano;
             s->data = copiarData(elemento);
-            if(cond){
-                booleano = get_bool_value( eval(cond) );
+            if (cond)
+            {
+                booleano = get_bool_value(eval(cond));
             }
-            else {
+            else
+            {
                 booleano = 1;
             }
 
-            if(booleano != 0){
+            if (booleano != 0)
+            {
                 found = 1;
-                nuevo = eval (tblock);
+                nuevo = eval(tblock);
             }
             iterator = get_next(iterator);
         }
@@ -165,7 +173,7 @@ tData eval_flow(struct flow *a)
 /*=======================================================================*/
 /*                      AST working MEMORY DEFINITION                    */
 /*=======================================================================*/
-struct ast *newmemory_ast(int nodetype, struct symbol *s, struct ast *a)
+struct ast *newmemory_ast(int nodetype, struct symbol *s, struct ast *a, struct symlist* sl)
 {
     struct memory_ast *nvo = malloc(sizeof(struct memory_ast));
     if (!nvo)
@@ -176,9 +184,10 @@ struct ast *newmemory_ast(int nodetype, struct symbol *s, struct ast *a)
     nvo->nodetype = nodetype;
     nvo->s = s;
     nvo->a = a;
+    nvo->sl = sl;
     return (struct ast *)nvo;
 }
-tData eval_memory_ast(struct memory_ast * arbol)
+tData eval_memory_ast(struct memory_ast *arbol)
 {
     if (!arbol)
     {
@@ -187,10 +196,11 @@ tData eval_memory_ast(struct memory_ast * arbol)
     }
 
     tData nuevo = NULL;
-    struct symbol* s = arbol->s;
-    struct ast* a    = arbol->a;
+    struct symbol *s = arbol->s;
+    struct ast *a = arbol->a;
+    struct symlist* sl = arbol->sl;
 
-    switch (get_nodetype( (struct ast*) arbol ))
+    switch (get_nodetype((struct ast *)arbol))
     {
     case ASIGNACION:
     {
@@ -201,7 +211,7 @@ tData eval_memory_ast(struct memory_ast * arbol)
     case VAR_REF:
     {
         nuevo = copiarData(s->data); // sin copiar ?
-        
+
         if (nuevo == NULL)
         {
             notificaciones(8005);
@@ -210,33 +220,33 @@ tData eval_memory_ast(struct memory_ast * arbol)
     }
     case FN_CALL:
     {
-        struct symbol*   f = s;
-        struct ast* params = a;
-        struct symlist* sl = f->args;
-        struct ast*   body = f->body;
+        struct symbol *f = s;
+        struct ast *params = a;
+        struct symlist *sl = f->args;
+        struct ast *body = f->body;
 
-        int nargs = compute_size(sl); 
-        int widht   = get_widht(params);
-        if(nargs != widht)
+        int nargs = compute_size(sl);
+        int widht = get_widht(params);
+        if (nargs != widht)
         {
             printf("la cantidad de parametros no coincide con los esperados\n");
             return NULL;
         }
 
-        tData* new_values = malloc(sizeof(tData)*nargs);
-        tData* old_values = malloc(sizeof(tData)*nargs);
+        tData *new_values = malloc(sizeof(tData) * nargs);
+        tData *old_values = malloc(sizeof(tData) * nargs);
 
-        if(!new_values || !old_values)
+        if (!new_values || !old_values)
         {
             printf("sin memoria en FN_CALL\n");
             return NULL;
         }
 
         // Compute new_datas
-        struct ast* nav_ast = params;
-        for(int i = 0; i < nargs; i++)
+        struct ast *nav_ast = params;
+        for (int i = 0; i < nargs; i++)
         {
-            if( get_nodetype(nav_ast) == LIST_OF_AST )
+            if (get_nodetype(nav_ast) == LIST_OF_AST)
             {
                 new_values[i] = eval(nav_ast->l);
                 nav_ast = nav_ast->r;
@@ -249,33 +259,70 @@ tData eval_memory_ast(struct memory_ast * arbol)
 
         // Save old_values of the variables
         // Update new_values to the variables
-        struct symlist* nav_sl = sl;
-        for(int i = 0; i < nargs; i++)
+        struct symlist *nav_sl = sl;
+        for (int i = 0; i < nargs; i++)
         {
             old_values[i] = nav_sl->s->data;
-            nav_sl->s->data   = new_values[i];
-            if(!nav_sl)
+            nav_sl->s->data = new_values[i];
+            if (!nav_sl)
             {
                 printf("error en FN_CALL debido a compute_size\n");
                 return NULL;
             }
             nav_sl = nav_sl->next;
         }
-        
+
         // Eval body with variables.data updated
         nuevo = eval(body);
 
         // Take back old_values to variables.data
         nav_sl = sl;
-        for(int i = 0; i < nargs; i++)
-        {   
+        for (int i = 0; i < nargs; i++)
+        {
             nav_sl->s->data = old_values[i];
-            if(!sl)
+            if (!sl)
             {
                 printf("error en FN_CALL debido a compute_size\n");
                 return NULL;
             }
             nav_sl = nav_sl->next;
+        }
+        break;
+    }
+    case ASSIGN_MULTIPLE:
+    {
+        tData id_data = s->data;
+        if(id_data == NULL)
+        {
+            notificaciones(14000);
+            exit(1);
+        }
+        if(! es_struct(id_data))
+        {
+            notificaciones(14001);
+            exit(1);
+        }
+        
+        int tam = compute_size(sl);
+        if( tamanio(id_data) < tam )
+        {
+            notificaciones(14002);
+            exit(1);        
+        }
+        
+        tData elem_i = NULL;
+        for(int i = 1; i <= tam; i++)
+        {
+            elem_i = elemento_pos(id_data, i);
+            
+            if(!sl)
+            {
+                printf("error en logica, compute_size");
+                return NULL;
+            }
+
+            sl->s->data = copiarData(elem_i);
+            sl = sl->next;
         }
         break;
     }
@@ -287,25 +334,28 @@ tData eval_memory_ast(struct memory_ast * arbol)
 }
 /*=======================================================================*/
 
+/*=======================================================================*/
+/*                      AST working STRUCT LITERALS                      */
+/*=======================================================================*/
 tData eval_list(struct ast *a) // no semantic errors
 {
     tData nuevo = createData(LIST);
     if (!a->l)
         return a->d; // lista vacia se va directo
-    struct ast* nav = a->l;
+    struct ast *nav = a->l;
     while (get_nodetype(nav) == LIST_OF_AST)
     {
         agregarData(&nuevo, eval(nav->l));
-         nav = nav->r;
+        nav = nav->r;
     }
-    agregarData(&nuevo, eval(nav));      
+    agregarData(&nuevo, eval(nav));
     return nuevo;
 }
-tData eval_set(struct ast *a)  // no semantic errors
+tData eval_set(struct ast *a) // no semantic errors
 {
     if (!a->l)
         return a->d; // lista vacia se va directo
-    
+
     tData nuevo = createData(SET);
     struct ast *nav = a->l;
     while (get_nodetype(nav) == LIST_OF_AST)
@@ -316,44 +366,53 @@ tData eval_set(struct ast *a)  // no semantic errors
     agregarData(&nuevo, eval(nav));
     return nuevo;
 }
-tData eval_log (struct ast *a){
+
+/*=======================================================================*/
+/*                      AST working REL LOG EXPRESSION                   */
+/*=======================================================================*/
+tData eval_log(struct ast *a)
+{
 
     struct ast *left = a->l;
     struct ast *right = a->r;
 
     tData A = NULL;
-    if (left){
-        A = eval (left);
+    if (left)
+    {
+        A = eval(left);
     }
     tData B = eval(right);
 
-    switch(get_nodetype(a)){
-    
+    switch (get_nodetype(a))
+    {
+
     case AND:
     {
-        if( !left || !right)
+        if (!left || !right)
         {
-        notificaciones(9000); // no deberia pasar
-        exit(1);
+            notificaciones(9000); // no deberia pasar
+            exit(1);
         }
 
-        if(get_bool_value(A) && get_bool_value(B)){
+        if (get_bool_value(A) && get_bool_value(B))
+        {
             return createBool("true");
         }
 
         return createBool("false");
-    }    
+    }
     break;
 
     case OR:
     {
-        if( !left || !right)
+        if (!left || !right)
         {
-        notificaciones(9000); // no deberia pasar
-        exit(1);
+            notificaciones(9000); // no deberia pasar
+            exit(1);
         }
 
-        if(get_bool_value(A) || get_bool_value(B)){
+        if (get_bool_value(A) || get_bool_value(B))
+        {
             return createBool("true");
         }
 
@@ -362,22 +421,81 @@ tData eval_log (struct ast *a){
     break;
 
     case NOT:
-    {   
+    {
         tData nuevo = NULL;
-        if(!right)
+        if (!right)
         {
-        notificaciones(9000); // no deberia pasar
-        exit(1); 
+            notificaciones(9000); // no deberia pasar
+            exit(1);
         }
         nuevo = (get_bool_value(B)) ? createBool("false") : createBool("true");
         return nuevo;
     }
     break;
-
     }
     return NULL;
 }
+tData compute_op_rel(int nodetype, tData eval_left, tData eval_right)
+{
+    if (!eval_left || !eval_right)
+    {
+        printf("puntero null en compara_menor");
+        return NULL;
+    }
 
+    tData nuevo;
+    if (get_tipo(eval_left) != get_tipo(eval_right))
+    {
+        printf("Semantic Error los operadores de lasexpresiones relacionales deben ser del mismo tipo\n");
+        nuevo = NULL;
+        exit(1);
+    }
+    switch (nodetype)
+    {
+    case MAYOR:
+    {
+        nuevo = compara_mayor(eval_left, eval_right);
+        break;
+    }
+
+    case MENOR:
+    {
+        nuevo = compara_menor(eval_left, eval_right);
+        break;
+    }
+
+    case MAYOR_IGUAL:
+    {
+        nuevo = compara_mayorigual(eval_left, eval_right);
+        break;
+    }
+
+    case MENOR_IGUAL:
+    {
+        nuevo = compara_menorigual(eval_left, eval_right);
+        break;
+    }
+
+    case IGUAL:
+    {
+        nuevo = compara_igual(eval_left, eval_right);
+        break;
+    }
+
+    case DISTINTO:
+    {
+        nuevo = compara_distinto(eval_left, eval_right);
+        break;
+    }
+
+    default:
+        break;
+    }
+}
+
+/*=======================================================================*/
+/*                      AST working STRUCT EXPRESSIONS                   */
+/*=======================================================================*/
 tData evalOpList(struct ast *a)
 {
     struct ast *left = a->l;
@@ -388,7 +506,7 @@ tData evalOpList(struct ast *a)
     tData aux_result = eval(left);
     tData list_result = eval(right);
 
-    if( !aux_result || !list_result)
+    if (!aux_result || !list_result)
     {
         notificaciones(9000); // no deberia pasar
         exit(1);
@@ -402,10 +520,12 @@ tData evalOpList(struct ast *a)
         {
             nuevo = (list_result);
             int posicion = get_value(aux_result); // eval(left)
-           
-            if ( posicion > tamanio(list_result) )
+
+            if (posicion > tamanio(list_result))
             {
-                notificaciones(10000); mostrarData(list_result); printf(" es demesiada pequeña para eliminiar su elem en posicion: %d\n", posicion);
+                notificaciones(10000);
+                mostrarData(list_result);
+                printf(" es demesiada pequeña para eliminiar su elem en posicion: %d\n", posicion);
                 exit(1);
             }
             else
@@ -416,14 +536,16 @@ tData evalOpList(struct ast *a)
         else
         {
             // mostrar linea de error
-            if ( get_tipo(aux_result) != INT  )
+            if (get_tipo(aux_result) != INT)
             {
-                notificaciones(301); mostrarData(aux_result);
+                notificaciones(301);
+                mostrarData(aux_result);
                 exit(1);
             }
-            if ( get_tipo(list_result) != LIST )
+            if (get_tipo(list_result) != LIST)
             {
-                notificaciones(10002); mostrarData(list_result);
+                notificaciones(10002);
+                mostrarData(list_result);
                 exit(1);
             }
         }
@@ -439,12 +561,13 @@ tData evalOpList(struct ast *a)
         else
         {
             // mostrar linea de error
-            if ( get_tipo(aux_result) != INT  )
+            if (get_tipo(aux_result) != INT)
             {
-                notificaciones(301); mostrarData(aux_result); 
+                notificaciones(301);
+                mostrarData(aux_result);
                 exit(1);
             }
-            if ( get_tipo(list_result) != LIST )
+            if (get_tipo(list_result) != LIST)
             {
                 notificaciones(10002);
                 exit(1);
@@ -457,9 +580,10 @@ tData evalOpList(struct ast *a)
         if (get_tipo(aux_result) == INT && get_tipo(list_result) == LIST)
         {
             int posicion = get_value(aux_result);
-            if ( posicion > tamanio(list_result) )
+            if (posicion > tamanio(list_result))
             {
-                notificaciones(10000); mostrarData(list_result); 
+                notificaciones(10000);
+                mostrarData(list_result);
                 exit(1);
             }
             else
@@ -470,14 +594,16 @@ tData evalOpList(struct ast *a)
         else
         {
             // mostrar linea de error
-            if ( get_tipo(aux_result) != INT  )
+            if (get_tipo(aux_result) != INT)
             {
-                notificaciones(10001); mostrarData(aux_result); 
+                notificaciones(10001);
+                mostrarData(aux_result);
                 exit(1);
             }
-            if ( get_tipo(list_result) != LIST )
+            if (get_tipo(list_result) != LIST)
             {
-                notificaciones(10002); mostrarData(list_result); 
+                notificaciones(10002);
+                mostrarData(list_result);
                 exit(1);
             }
         }
@@ -511,8 +637,8 @@ tData evalOpSet(struct ast *a)
 
     tData conj_1 = eval(left);
     tData conj_2 = eval(right);
-    
-    if( !conj_1 || !conj_2)
+
+    if (!conj_1 || !conj_2)
     {
         notificaciones(9000);
         exit(1);
@@ -522,7 +648,7 @@ tData evalOpSet(struct ast *a)
         printf("Operacion valida solo para conjuntos\n");
         return NULL;
     }
-    
+
     switch (get_nodetype(a))
     {
     case UNION:
@@ -551,71 +677,49 @@ tData evalOpSet(struct ast *a)
     return nuevo;
 }
 
-tData compute_op_rel(int nodetype, tData eval_left, tData eval_right )
+/*=======================================================================*/
+/*                      AST working BUILT-IN-FUNCTIONS                   */
+/*=======================================================================*/
+tData eval_built_in_function(struct ast* a)
 {
-    if(!eval_left || !eval_right)
-	{
-		printf("puntero null en compara_menor");
-		return NULL;
-	}
-    
-    tData nuevo;
-    if(get_tipo(eval_left) != get_tipo(eval_right))
+    struct ast* left  = a->l;
+    struct ast* right = a->r;
+
+    tData nuevo = NULL;
+    switch (get_nodetype(a))
     {
-        printf("Semantic Error los operadores de lasexpresiones relacionales deben ser del mismo tipo\n");
-        nuevo = NULL;
-        exit(1);
-    }
-    switch (nodetype)
-    {
-    case MAYOR:
-    {
-        nuevo = compara_mayor(eval_left, eval_right);
-        break;
-    }
-    
-    case MENOR:
-    {
-        nuevo = compara_menor(eval_left, eval_right);
-        break;
-    }
+        case PRINT:
+        {
+            if(left != NULL)
+            {
+                mostrarData(eval(left));printf("\n");
+            }
+            break;
         
-        
-    case MAYOR_IGUAL:
-    {
-        nuevo = compara_mayorigual(eval_left, eval_right);
-        break;
+        }
+        case RETURN:
+        {
+            if(left != NULL)
+            {
+                printf("output: "); mostrarData(eval(left));printf("\n");
+            }
+            break;
+        }
+        default:
+        {
+            printf("error nodetype desconocido eval_built_in_function\n");
+            break;
+        }
     }
-        
-
-    case MENOR_IGUAL:
-    {   
-        nuevo = compara_menorigual(eval_left, eval_right);
-        break;
-    }
-
-    case IGUAL:
-    {   
-        nuevo = compara_igual(eval_left, eval_right);
-        break;
-    }
-
-    case DISTINTO:
-    {   
-        nuevo = compara_distinto(eval_left, eval_right);
-        break;
-    }
-
-    default:
-        break;
-    }
+         
+    return nuevo;
 }
 
 tData eval(struct ast *a)
 {
     if (!a)
     {
-        printf("error puntero null en eval\n");
+        printf("error puntero null en eval\n\n\n");
         return NULL;
     }
     struct ast *right = a->r;
@@ -653,14 +757,16 @@ tData eval(struct ast *a)
     case '-':
     case '*':
     case '/':
+    case '%':
     {
         tData eval_r, eval_l; // printf(" MUERE AQUI 3 ");
         eval_r = eval(right);
         eval_l = eval(left);
-        if ( !eval_l || !eval_r)
+        
+        if (!eval_l || !eval_r)
         {
             printf("Run-Time Error\n");
-            nuevo =  NULL;
+            nuevo = NULL;
             exit(1);
         }
         if (get_tipo(eval_r) != BOOL && get_tipo(eval_r) != STR && get_tipo(eval_r) != LIST && get_tipo(eval_r) != SET && get_tipo(eval_l) != BOOL && get_tipo(eval_l) != STR && get_tipo(eval_l) != SET && get_tipo(eval_l) != LIST)
@@ -679,6 +785,9 @@ tData eval(struct ast *a)
             case '/':
                 nuevo = cocData(eval_l, eval_r);
                 break;
+            case '%':
+                nuevo = modData(eval_l, eval_r);
+                break;
             default:
                 break;
             }
@@ -694,19 +803,19 @@ tData eval(struct ast *a)
     case MENOS_UNARIO:
     {
         tData eval_left = eval(left);
-        if(!eval_left)
+        if (!eval_left)
         {
-            printf("Run-Time Error\n"); 
+            printf("Run-Time Error\n");
             exit(1);
         }
         nuevo = negar_data(eval_left);
         break;
     }
-    
+
     case MODULO:
     {
         tData eval_left = eval(left);
-        if(!eval_left)
+        if (!eval_left)
         {
             printf("Eun-Time Error\n");
             exit(1);
@@ -714,7 +823,7 @@ tData eval(struct ast *a)
         nuevo = modulo_data(eval_left);
         break;
     }
-    
+
     case MAYOR:
     case MENOR:
     case MAYOR_IGUAL:
@@ -724,7 +833,7 @@ tData eval(struct ast *a)
     {
         tData eval_left = eval(left);
         tData eval_right = eval(right);
-        if(!eval_left || !eval_right)
+        if (!eval_left || !eval_right)
         {
             printf("Run-Time Error \n");
             nuevo = NULL;
@@ -747,7 +856,7 @@ tData eval(struct ast *a)
     case UNION:
     case INTER:
     case DIFF:
-    case CONTAINS: 
+    case CONTAINS:
     {
         nuevo = evalOpSet(a);
         break;
@@ -789,7 +898,7 @@ tData eval(struct ast *a)
         nuevo = eval_log(a);
         break;
     }
-   
+
     case IF:
     case WHILE:
     case FORALL:
@@ -802,43 +911,47 @@ tData eval(struct ast *a)
     case ASIGNACION:
     case VAR_REF:
     case FN_CALL:
+    case ASSIGN_MULTIPLE:
     {
         nuevo = eval_memory_ast((struct memory_ast *)a);
         break;
     }
-   
-    case GET: 
+
+    case GET:
     {
         tData pos_data = eval(left);
         tData conj_aux = eval(right);
-        
-        if(get_tipo(pos_data) != INT || get_tipo(conj_aux) != SET)
+
+        if (get_tipo(pos_data) != INT || get_tipo(conj_aux) != SET)
         {
-            if ( get_tipo(pos_data) != INT  )
+            if (get_tipo(pos_data) != INT)
             {
-                notificaciones(301); mostrarData(pos_data);
+                notificaciones(301);
+                mostrarData(pos_data);
                 exit(1);
             }
-            if ( get_tipo(conj_aux) != SET )
+            if (get_tipo(conj_aux) != SET)
             {
-                notificaciones(11000); mostrarData(conj_aux);
+                notificaciones(11000);
+                mostrarData(conj_aux);
                 exit(1);
             }
         }
-         
+
         int pos = get_value(pos_data);
-         
-        if ( pos > tamanio(conj_aux) )
+
+        if (pos > tamanio(conj_aux))
         {
-            mostrarData(conj_aux); printf(" es demesiada pequeña para eliminiar su elem en posicion: %d\n", pos);
+            mostrarData(conj_aux);
+            printf(" es demesiada pequeña para eliminiar su elem en posicion: %d\n", pos);
             exit(1);
         }
-         
-        nuevo   = elemento_pos(conj_aux, pos);
-        
-    break;
+
+        nuevo = elemento_pos(conj_aux, pos);
+
+        break;
     }
-    
+
     case BLOCK:
     {
         /*while (get_nodetype(a) == BLOCK)
@@ -847,7 +960,13 @@ tData eval(struct ast *a)
             a = a->r;
         }
         nuevo = eval(a);*/
-        eval(left); nuevo = eval(right);        
+        eval(left);
+        nuevo = eval(right);
+        break;
+    }
+    case PRINT: case RETURN:
+    {
+        nuevo = eval_built_in_function(a);
         break;
     }
     default:
@@ -904,13 +1023,13 @@ struct symbol *lookup(char *sym)
     printf("Overflow tabla de simbolos \n");
     return NULL;
 }
-void add_definition(struct symbol* s, struct symlist* sl, struct ast* body)
+void add_definition(struct symbol *s, struct symlist *sl, struct ast *body)
 {
-    if(s->args)
+    if (s->args)
     {
         free_symlist(s->args);
     }
-    if(s->body)
+    if (s->body)
     {
         // treefree(s->body);
     }
@@ -922,25 +1041,25 @@ void add_definition(struct symbol* s, struct symlist* sl, struct ast* body)
 /*=======================================================================*/
 /*                          SYMLIST DEFINITION                           */
 /*=======================================================================*/
-struct symlist* addsym(struct symbol* s, struct symlist* sl)
+struct symlist *addsym(struct symbol *s, struct symlist *sl)
 {
-    struct symlist* lista = malloc(sizeof(struct symlist));
-    if(!lista)
+    struct symlist *lista = malloc(sizeof(struct symlist));
+    if (!lista)
     {
-        printf("error en addsym sin memoria\n"); 
+        printf("error en addsym sin memoria\n");
         return NULL;
     }
     lista->s = s;
     lista->next = sl;
     return lista;
 }
-void free_symlist(struct symlist* sl)
+void free_symlist(struct symlist *sl)
 {
-    if(!sl)
+    if (!sl)
     {
         return;
     }
-    struct symlist* next = sl->next;
+    struct symlist *next = sl->next;
     free(sl);
     free_symlist(next);
     /*struct symlist* next;
@@ -952,9 +1071,9 @@ void free_symlist(struct symlist* sl)
     }
     */
 }
-int compute_size(struct symlist* sl)
+int compute_size(struct symlist *sl)
 {
-    if(!sl)
+    if (!sl)
     {
         printf("posible error puntero null en compute_size\n");
         return 0;
@@ -962,10 +1081,10 @@ int compute_size(struct symlist* sl)
     int size = 0;
     while (sl)
     {
-        size ++;
+        size++;
         sl = sl->next;
     }
-    return size;  
+    return size;
 }
 /*=======================================================================*/
 
@@ -974,25 +1093,63 @@ int yyerror(char *s)
     fprintf(stderr, "Error de sintaxis: %s", s);
 }
 
-void notificaciones(int caso){
-    switch(caso){
-        /*Errores de memoria*/
-        case 8000 : printf("\nError 8000: Puntero nulo en get_nodetype().\n"); break;
-        case 8001 : printf("\nError 8001: Sin memoria en newast. \n"); break;
-        case 8002 : printf("\nError 8002: Sin memoria para estructura de control."); break;
-        case 8003 : printf("\nError 80003: Sin en estructura newmemory.\n"); break;
-        case 8004 : printf("\nError 8004: Puntero nulo.\n");break;
-        case 8005 : printf("\nError 8005: Referencia a variable no inicializada.\n"); break;
-        /*Error *e ejecucion*/
-        case 9000 : printf("\nError 9000: Error de ejecucion. Revise la entrada de datos.\n"); break;
-        /*Error operaciones entre listas*/
-        case 10000 : printf("\nError 300: La posicion es mayor al tamanio de la lista.\n"); break;
-        case 10001 : printf("\nError 301: El primer elemento debe ser un tipo INT.\n"); break;
-        case 10002 : printf("\nError 302: El segundo elemento debe ser tipo LIST.\n"); break;
-        case 10003 : printf("\nError 303: Solo se pueden concatenar LIST.\n");break;
-        /*Error operaciones entre conjuntos*/
-        case 11000 : printf("\nError 400 El segundo elemento debe ser tipo SET.\n");break;
+void notificaciones(int caso)
+{
+    switch (caso)
+    {
+    /*Errores de memoria*/
+    case 8000:
+        printf("\nError 8000: Puntero nulo en get_nodetype().\n");
+        break;
+    case 8001:
+        printf("\nError 8001: Sin memoria en newast. \n");
+        break;
+    case 8002:
+        printf("\nError 8002: Sin memoria para estructura de control.");
+        break;
+    case 8003:
+        printf("\nError 80003: Sin en estructura newmemory.\n");
+        break;
+    case 8004:
+        printf("\nError 8004: Puntero nulo.\n");
+        break;
+    case 8005:
+        printf("\nError 8005: Referencia a variable no inicializada.\n");
+        break;
+    /*Error *e ejecucion*/
+    case 9000:
+        printf("\nError 9000: Error de ejecucion. Revise la entrada de datos.\n");
+        break;
+    /*Error operaciones entre listas*/
+    case 10000:
+        printf("\nError 300: La posicion es mayor al tamanio de la lista.\n");
+        break;
+    case 10001:
+        printf("\nError 301: El primer elemento debe ser un tipo INT.\n");
+        break;
+    case 10002:
+        printf("\nError 302: El segundo elemento debe ser tipo LIST.\n");
+        break;
+    case 10003:
+        printf("\nError 303: Solo se pueden concatenar LIST.\n");
+        break;
+    /*Error operaciones entre conjuntos*/
+    case 11000:
+        printf("\nError 400 El segundo elemento debe ser tipo SET.\n");
+        break;
         /*Error operaciones relacionales*/
-                
+
+    case 14000:
+        printf("Error 500: Variable no inicializada en assignacion multiple. \n");
+        break;
+    case 14001:
+        printf("Error solo se puede desempaquetar listas o conjuntos.\n");
+        break;
+    case 14002:
+        printf("Error no se puede desempaquetar tanto elementos como necesita.\n");
+        break;
+    default:
+        printf("error en notificaciones no conido %d", caso);
+        break;
     }
 }

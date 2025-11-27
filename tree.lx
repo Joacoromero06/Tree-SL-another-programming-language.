@@ -9,6 +9,7 @@ EXP ([eE][+-]?[0-9]+)
 %s REPL
 
 %%
+"%" | 
 ";" |
 ":" |
 "|" |
@@ -32,6 +33,8 @@ EXP ([eE][+-]?[0-9]+)
 "=="  { return T_IGUAL; }
 "!="  { return T_DISTINTO; }
 
+"=>"  { return T_FLECHA;  }
+
 and   { return T_AND; }
 or    { return T_OR; }
 not   { return T_NOT; }
@@ -50,6 +53,10 @@ endfn   { return T_ENDFN;      }
 main    { return T_MAIN;       }
 endmain { return T_ENDMAIN;    }
 "$tree" { BEGIN(REPL); return T_PESOS_TREE; }
+
+print   { return T_PRINT;   }
+return  { return T_RETURN;  }
+let     { return T_LET;     }
 
 kick   { return T_KICK;   }
 add    { return T_ADD;    }

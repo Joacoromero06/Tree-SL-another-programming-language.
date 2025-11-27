@@ -11,9 +11,7 @@ ctrl k + ctrl 0
 
 PENDIENTES
 return_stm en main y funciones
-
-// salte error si obtener elemento afuera de rango
-
+ 
 errores de sintaxis
  
 // comentarios mult assign print modulo
