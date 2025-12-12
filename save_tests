@@ -1,0 +1,25 @@
+
+# pyright: reportGeneralTypeIssues=false
+# type: ignore
+# mypy: disable-error-code
+main: 
+    x = 3;
+    while (x < 10) do
+        if (x == 5) x = x + 1; continue ; endif
+        println x;
+        x = x + 1;
+    end
+    print "last value of x: "; print x;
+endmain
+main:
+    x = [1,2,3];
+    forall (x in x | x%2 == 1) do 
+        if (x == take 2 from [1,2,3])
+            print " ";
+        else
+            print x;
+        endif
+    end
+    println "";
+    print "value of x after algoritm: "; print x;
+endmain  

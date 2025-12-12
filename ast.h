@@ -1,77 +1,64 @@
+#ifndef ASTH
+#define ASTH
+
 #include "data.h"
 #include <stdio.h>
-#include <stdlib.h>
-
+#include <stdlib.h> 
 
 /*=======================================================================*/
 /*                             AST DEFINITION                            */
 /*=======================================================================*/
-struct ast{
+typedef struct ast{
     int nodetype;
     struct ast* l;
     struct ast* r;
     tData d;
-};
-struct ast* newast(int, struct ast*, struct ast*, tData);
-int get_nodetype(struct ast*);
-int get_widht(struct ast*);
+} Ast;
+Ast* newast(int, Ast*, Ast*, tData);
+int get_nodetype(Ast*);
+void set_nodetype(Ast**, int);
+int get_widht(Ast*);
+void walk(Ast**);
+
 /*=======================================================================*/
 
 /*=======================================================================*/
 /*                             FLOW DEFINITION                           */
 /*=======================================================================*/
-struct flow{
+typedef struct{
     int nodetype;
-    struct ast* cond;
-    struct ast* iterable;
-    struct ast* tblock;
-    struct ast* fblock;
-    struct symbol* s;
-};
-struct ast* newflow(int, struct ast*, struct ast*, struct ast*, struct ast*, struct symbol*);
-/*=======================================================================*/
-
-
-/*=======================================================================*/
-/*                          SYMLIST DEFINITION                           */
-/*=======================================================================*/
-struct symlist {
-    struct symbol* s;
-    struct symlist* next;
-};
-struct symlist* addsym(struct symbol*, struct symlist*);
-void free_symlist(struct symlist*);
-int compute_size(struct symlist*);
+    Ast* cond;
+    Ast* iterable;
+    Ast* tbody;
+    Ast* fbody;
+    char* iterator; 
+} AstFlow;
+Ast* newflow(int, Ast*, Ast*, Ast*, Ast*, char*);
 /*=======================================================================*/
 
 /*=======================================================================*/
-/*                          SYMBOL DEFINITION                            */
+/*                         MEMORY AST DEFINITION                         */
 /*=======================================================================*/
-struct symbol{
+typedef struct id_list{
     char* name;
-    tData data;
-    struct symlist* args;
-    struct ast* body;
-};
-struct symbol* lookup(char* sym);
-void add_definition(struct symbol*, struct symlist*, struct ast*);
-#define NHASH 9997
-/*=======================================================================*/
+    struct id_list* sig;
+} IdList;
+IdList* newIdList (char*, IdList*);
+void deleteIdList (IdList*);
+void avanzo_IdList(IdList**);
 
-/*=======================================================================*/
-/*                      AST working MEMORY DEFINITION                    */
-/*=======================================================================*/
-struct memory_ast{
+typedef struct {
     int nodetype;
-    struct symbol* s;
-    struct ast* a; // value | body | params actuales
-    struct symlist* sl;
-};
-struct ast* newmemory_ast(int, struct symbol*, struct ast*, struct symlist*);
+    char* name;
+    Ast* a;
+    IdList* list_id;
+} AstMemory;
+Ast* newmemory_ast(int, char*, Ast*, IdList*);
 /*=======================================================================*/
 
-tData eval(struct ast*);
 
-int yyerror(char*);
 
-void notificaciones(int);
+void freetree(Ast*);
+
+void astError(char*);
+#endif

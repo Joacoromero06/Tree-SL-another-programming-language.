@@ -40,7 +40,8 @@ double get_real(tData);
 str get_cad(tData);
 
 int es_struct(tData);
-
+int empty_struct(tData);
+void avanzo_tData(tData*);
 // Operaciones Artimeticas de tData
 tData sumaData(tData, tData);
 tData restaData(tData, tData);

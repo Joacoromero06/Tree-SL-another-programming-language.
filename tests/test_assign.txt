@@ -1,0 +1,20 @@
+main:
+B = [1,2,3];
+A = {{},B, {B}};
+
+let A => (a,b,c);
+
+#let A => (a,b,c,d); error 
+
+print("el valor de a "); print(a);
+print("el valor de b "); print(b);
+print("el valor de c "); print(c);
+
+# aux vale 1
+# aux = take 1 from b;
+
+# error no es struct
+# let aux => (a);
+
+return a;
+endmain

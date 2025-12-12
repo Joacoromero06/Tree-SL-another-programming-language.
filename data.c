@@ -46,6 +46,8 @@ tData createStr(char *s)
 {
 	tData nvo = createData(STR);
 	nvo->cad = load2(s);
+	elim_i(&(nvo->cad), 0);
+	elim_i(&(nvo->cad), str_tam(nvo->cad)-1);
 	return nvo;
 }
 tData createInt(int value)
@@ -262,6 +264,37 @@ int es_struct(tData a)
 		return 0;
 	}
 	return 1;
+}
+int empty_struct(tData a)
+{
+	if(!es_struct(a))
+	{
+		printf("empty_struct de no struct");
+		return 0;
+	}
+	else if (get_dato(a) == NULL)
+		return 1;
+	else 
+		return 0;
+}
+void avanzo_tData(tData* p_a)
+{
+	if(!p_a)
+	{
+		printf("error interno avanza() puntero null");
+		return;
+	}
+	if(!(*p_a))
+	{
+		printf("erro no se puede avanzar tData null en avanza()");
+		return;
+	}
+	if(!es_struct(*p_a))
+	{
+		printf("error no se puede avanzar un tData que no es LIST o SET");
+		return;
+	}
+	*p_a = get_next(*p_a);
 }
 /*==========================================================================*/
 /*							OPERACIONES ARITMETICAS							*/
@@ -528,11 +561,11 @@ void mostrarData(tData nodo)
 {
 	if (nodo == NULL)
 	{
-		// printf("_mostrando vacio_\n");
+		printf(" null en mostrar data\n");
 		return;
 	}
 
-
+	//printf("en mostrar data\n");
 	switch (nodo->tipoNodo)
 	{
 	case STR:
@@ -593,7 +626,7 @@ void agregarData(tData *cabe, tData elem)
 	}
 	if (cab->dato == NULL)
 	{
-		cab->dato = elem; // copiarlo
+		cab->dato = copiarData(elem); // copiarlo
 	}
 	else
 	{
@@ -627,12 +660,7 @@ void agregarData(tData *cabe, tData elem)
 			printf("caso no def en agregarData");
 			break;
 		}
-	}
-	// printf("\n\ndespues de agregar elem: ");
-	// mostrarData(elem);
-	// printf("\nla lista cab quedo: ");
-	// mostrarData(*cabe);
-	// printf("\n");
+	} 
 }
 tData copiarData(tData copiado)
 {
@@ -671,6 +699,9 @@ tData copiarData(tData copiado)
 		nvo->dato = copiarData(copiado->dato);
 		nvo->sig = copiarData(copiado->sig);
 		break;
+	default:
+		printf("tipoNodo desconocido en copiarData\n");
+		break;
 	}
 
 	return nvo;
@@ -683,6 +714,12 @@ void freeData(tData descartado)
 
 	switch (descartado->tipoNodo)
 	{
+	case INT: case BOOL:
+		// no hace nada
+		break;
+	case DOUBLE:
+		// no hace nada
+		break;	
 	case STR:
 		freeString(descartado->cad);
 		break;
@@ -691,7 +728,8 @@ void freeData(tData descartado)
 		freeData(descartado->dato);
 		freeData(descartado->sig);
 		break;
-	default: break;
+	default: printf("tipo nodo desconocido en freeData %d\n", descartado->tipoNodo); //no hace nada
+		break;
 	}
 
 	free(descartado);
@@ -932,12 +970,18 @@ int pertenece(tData A, tData elem)
 int pertenece_completing(tData elem, tData A)
 {
 	int band = 0; // elem no pertenece
-	while (A != NULL && !band)
+	if(!A)
 	{
-		if ( Igualdad(elem, get_dato(A)) == 0 ) // pertenece(a,b)
-			band = 1;  // elem si pertenece //no b=0
-		A = get_next(A);
+		printf("conjunto lista null en pertence completing\n");
+		return 0;
 	}
+	if(get_dato(A) != NULL) // lista conjunto vacio
+		while (A != NULL && !band)
+		{
+			if ( Igualdad(elem, get_dato(A)) == 0 ) // pertenece(a,b)
+				band = 1;  // elem si pertenece //no b=0
+			A = get_next(A);
+		}
 	return band;
 }
 int contenido(tData A, tData B)

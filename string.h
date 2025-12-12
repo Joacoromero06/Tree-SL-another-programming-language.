@@ -8,8 +8,7 @@ typedef struct nodo_str{
 }tnodo;
 typedef tnodo *str;
 
-/*MUDULOS PUBLICOS QUE YO AGREGUE*/
-
+ 
 /*PUBLICOS*/
 str create();
 str load();
@@ -18,6 +17,9 @@ void print(str);
 str concat(str,str);
 str before_token(str,char);
 str after_token (str, char);
+
+void elim_i(str*, int);
+int str_tam(str);
 
 void freeString(str);
 int compStr(str, str);

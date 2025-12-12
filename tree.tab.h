@@ -57,48 +57,53 @@ extern int yydebug;
     EOL = 258,                     /* EOL  */
     T_FROM = 259,                  /* T_FROM  */
     T_TO = 260,                    /* T_TO  */
-    T_IF = 261,                    /* T_IF  */
-    T_ELSE = 262,                  /* T_ELSE  */
-    T_ENDIF = 263,                 /* T_ENDIF  */
-    T_WHILE = 264,                 /* T_WHILE  */
-    T_DO = 265,                    /* T_DO  */
-    T_END = 266,                   /* T_END  */
-    T_FORALL = 267,                /* T_FORALL  */
-    T_FORANY = 268,                /* T_FORANY  */
-    T_FN = 269,                    /* T_FN  */
-    T_ENDFN = 270,                 /* T_ENDFN  */
-    T_MAIN = 271,                  /* T_MAIN  */
-    T_ENDMAIN = 272,               /* T_ENDMAIN  */
-    T_PESOS_TREE = 273,            /* T_PESOS_TREE  */
-    T_PRINT = 274,                 /* T_PRINT  */
-    T_RETURN = 275,                /* T_RETURN  */
-    T_LET = 276,                   /* T_LET  */
-    T_FLECHA = 277,                /* T_FLECHA  */
-    NUM_INT = 278,                 /* NUM_INT  */
-    ATOM = 279,                    /* ATOM  */
-    NUM_DOUBLE = 280,              /* NUM_DOUBLE  */
-    T_BOOL = 281,                  /* T_BOOL  */
-    ID = 282,                      /* ID  */
-    T_OR = 283,                    /* T_OR  */
-    T_AND = 284,                   /* T_AND  */
-    T_NOT = 285,                   /* T_NOT  */
-    T_MAYOR = 286,                 /* T_MAYOR  */
-    T_MAYOR_IGUAL = 287,           /* T_MAYOR_IGUAL  */
-    T_MENOR = 288,                 /* T_MENOR  */
-    T_MENOR_IGUAL = 289,           /* T_MENOR_IGUAL  */
-    T_IGUAL = 290,                 /* T_IGUAL  */
-    T_DISTINTO = 291,              /* T_DISTINTO  */
-    T_IN = 292,                    /* T_IN  */
-    T_CONTAINS = 293,              /* T_CONTAINS  */
-    T_GET = 294,                   /* T_GET  */
-    T_UNION = 295,                 /* T_UNION  */
-    T_INTER = 296,                 /* T_INTER  */
-    T_DIFF = 297,                  /* T_DIFF  */
-    T_TAKE = 298,                  /* T_TAKE  */
-    T_KICK = 299,                  /* T_KICK  */
-    T_CONCAT = 300,                /* T_CONCAT  */
-    T_ADD = 301,                   /* T_ADD  */
-    T_MENOS_UNARIO = 302           /* T_MENOS_UNARIO  */
+    T_LET = 261,                   /* T_LET  */
+    T_IF = 262,                    /* T_IF  */
+    T_ELSE = 263,                  /* T_ELSE  */
+    T_ENDIF = 264,                 /* T_ENDIF  */
+    T_WHILE = 265,                 /* T_WHILE  */
+    T_DO = 266,                    /* T_DO  */
+    T_END = 267,                   /* T_END  */
+    T_FORALL = 268,                /* T_FORALL  */
+    T_FORANY = 269,                /* T_FORANY  */
+    T_FUNCTION = 270,              /* T_FUNCTION  */
+    T_PROCEDURE = 271,             /* T_PROCEDURE  */
+    T_ENDFN = 272,                 /* T_ENDFN  */
+    T_REF = 273,                   /* T_REF  */
+    T_MAIN = 274,                  /* T_MAIN  */
+    T_ENDMAIN = 275,               /* T_ENDMAIN  */
+    T_PESOS_TREE = 276,            /* T_PESOS_TREE  */
+    T_PRINT = 277,                 /* T_PRINT  */
+    T_PRINTLN = 278,               /* T_PRINTLN  */
+    T_RETURN = 279,                /* T_RETURN  */
+    T_FLECHA = 280,                /* T_FLECHA  */
+    T_BREAK = 281,                 /* T_BREAK  */
+    T_CONTINUE = 282,              /* T_CONTINUE  */
+    NUM_INT = 283,                 /* NUM_INT  */
+    ATOM = 284,                    /* ATOM  */
+    NUM_DOUBLE = 285,              /* NUM_DOUBLE  */
+    T_BOOL = 286,                  /* T_BOOL  */
+    ID = 287,                      /* ID  */
+    T_OR = 288,                    /* T_OR  */
+    T_AND = 289,                   /* T_AND  */
+    T_NOT = 290,                   /* T_NOT  */
+    T_MAYOR = 291,                 /* T_MAYOR  */
+    T_MAYOR_IGUAL = 292,           /* T_MAYOR_IGUAL  */
+    T_MENOR = 293,                 /* T_MENOR  */
+    T_MENOR_IGUAL = 294,           /* T_MENOR_IGUAL  */
+    T_IGUAL = 295,                 /* T_IGUAL  */
+    T_DISTINTO = 296,              /* T_DISTINTO  */
+    T_IN = 297,                    /* T_IN  */
+    T_CONTAINS = 298,              /* T_CONTAINS  */
+    T_GET = 299,                   /* T_GET  */
+    T_UNION = 300,                 /* T_UNION  */
+    T_INTER = 301,                 /* T_INTER  */
+    T_DIFF = 302,                  /* T_DIFF  */
+    T_TAKE = 303,                  /* T_TAKE  */
+    T_KICK = 304,                  /* T_KICK  */
+    T_CONCAT = 305,                /* T_CONCAT  */
+    T_ADD = 306,                   /* T_ADD  */
+    T_MENOS_UNARIO = 307           /* T_MENOS_UNARIO  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -107,14 +112,19 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 12 "tree.y"
+#line 14 "tree.y"
 
-    struct ast* a;
-    struct symbol* s;
-    tData td;
-    struct symlist* sl;
+    Ast* a; 
+    tData td; 
+    char* s;
+    Env* ep;
+    IdList* l_id;
+    Parameter* param;
+    ParamList* l_param;
+    Argument* arg;
+    ArgList* l_arg;
 
-#line 118 "tree.tab.h"
+#line 128 "tree.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -126,7 +136,7 @@ typedef union YYSTYPE YYSTYPE;
 extern YYSTYPE yylval;
 
 
-int yyparse (void);
+int yyparse (Env* global_env, SpEnv* subprogram_env);
 
 
 #endif /* !YY_YY_TREE_TAB_H_INCLUDED  */

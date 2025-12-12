@@ -1,14 +1,17 @@
 %option noyywrap
 %{
     #include "data.h"
-    #include "tree.tab.h"
     #include "ast.h"
+    #include "env.h"
+    #include "tree.tab.h"
 %}
 
 EXP ([eE][+-]?[0-9]+)
 %s REPL
 
 %%
+"!" |
+"&" |
 "%" | 
 ";" |
 ":" |
@@ -48,15 +51,21 @@ end       { return T_END;     }
 forall    { return T_FORALL;  }
 forany    { return T_FORANY;  }
 
-fn      { return T_FN;         }
-endfn   { return T_ENDFN;      }
-main    { return T_MAIN;       }
-endmain { return T_ENDMAIN;    }
-"$tree" { BEGIN(REPL); return T_PESOS_TREE; }
+"function"  { return T_FUNCTION;  }
+procedure { return T_PROCEDURE; }
+endfn     { return T_ENDFN;     } 
+ref       { return T_REF;       } 
 
-print   { return T_PRINT;   }
-return  { return T_RETURN;  }
-let     { return T_LET;     }
+main     { return T_MAIN;       }
+endmain  { return T_ENDMAIN;    }
+"$tree"  { BEGIN(REPL); return T_PESOS_TREE; }
+
+print       { return T_PRINT;   }
+println     { return T_PRINTLN; }
+return      { return T_RETURN;  }
+break       { return T_BREAK;   }
+"continue"  { return T_CONTINUE;}
+let         { return T_LET;     }
 
 kick   { return T_KICK;   }
 add    { return T_ADD;    }
@@ -76,10 +85,10 @@ diff      { return T_DIFF;  }
 "false" { yylval.td = createBool(strdup(yytext)); return T_BOOL; }
 
 [0-9]+                    { yylval.td = createInt(atoi(strdup(yytext))); return NUM_INT; }
-\"[a-zA-Z0-9_ ]*\"                    { yylval.td = createStr(strdup(yytext)); return ATOM; }
-[a-zA-Z_][a-zA-Z0-9_]*    { yylval.s = lookup(strdup(yytext)); return ID; }
+\".*\"        { yylval.td = createStr(strdup(yytext)); return ATOM; }
 [0-9]+"."?[0-9]*{EXP}? |
 [0-9]*"."?[0-9]+{EXP}?    { yylval.td = createDouble(atof(strdup(yytext))); return NUM_DOUBLE; }
+[a-zA-Z0-9_]+              { yylval.s = strdup(yytext); return ID; }  
 "#".*  {}
 [ \t]  {} 
 <REPL>\n { return EOL; }
