@@ -1,6 +1,3 @@
 # Tree SL
-Un lenguaje de programacion diseñado para el trabajo de listas y conjuntos
-
-continue..
-continue..
-maxi revisa uachin
+Un lenguaje de programacion diseñado para el trabajo de listas y conjuntos desarrollado en un ámbito académico.
+Trabajo dedicado a profesor Javier T. y Ruben L. Capos
